@@ -1,0 +1,46 @@
+{
+    "name": "litenode",
+    "version": "1.0.0",
+    "description": "Fast, lightweight, and independent: A Node.js web framework featuring an integrated JSON body parser for effortless handling of POST requests, along with a built-in static asset loader for seamless file serving.",
+    "main": "litenode.cjs",
+    "module": "litenode.mjs",
+    "types": "litenode.d.ts",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "LebCit (https://lebcit.github.io/)",
+    "license": "MIT",
+    "keywords": [
+        "api",
+        "asset-loader",
+        "file-serving",
+        "framework",
+        "http",
+        "json-body-parser",
+        "node",
+        "node.js",
+        "post-request",
+        "router",
+        "static-assets",
+        "web",
+        "web-server"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/LebCit/litenode.git"
+    },
+    "bugs": {
+        "url": "https://github.com/LebCit/litenode/issues"
+    },
+    "homepage": "https://github.com/LebCit/litenode",
+    "exports": {
+        ".": {
+            "import": "./litenode.mjs",
+            "require": "./litenode.cjs"
+        },
+        "./*": {
+            "import": "./$1.mjs",
+            "require": "./$1.cjs"
+        }
+    }
+}
