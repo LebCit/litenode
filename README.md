@@ -337,7 +337,13 @@ Error while reading static directory: "public" directory doesn't exist!
 LiteNode will continue running without serving static assets.
 ```
 
-To use `LiteNode` without a static asset folder and avoid warning messages, create an empty static folder at the root of your application.
+To use `LiteNode` without a static asset folder and avoid warning messages, set the directory to `__NO_STATIC_DIR__`:
+
+```javascript
+const app = new LiteNode("__NO_STATIC_DIR__")
+```
+
+This will skip serving static assets and avoid logging warnings to the console.
 
 ### Combining Routers
 
@@ -419,6 +425,55 @@ app.nest("/admin", adminRouter, myMiddlewareFunction)
 ```
 
 Accessing `http://localhost:5000/admin/dashboard` will respond with "Admin Dashboard".
+
+#### Merging and Nesting with Middlewares
+
+The examples above demonstrate how to merge and nest while applying middleware. However, an application in production will likely consist of multiple routes.<br/>
+Utilizing the `merge` and `nest` methods with one or many middlewares will impact the parent routes and consequently the child routes by applying the defined middleware(s) to them.<br/>
+To mitigate this behavior, initialize the merged `LiteNode` instance without specifying a directory for serving static files:
+
+```javascript
+const app = new LiteNode()
+
+// Create a LiteNode instance that skips serving static assets
+const subApp = new LiteNode("__NO_STATIC_DIR__")
+
+// Global middleware
+app.use(async (req, res) => {
+	console.log(req.url)
+})
+
+// Route based middleware
+async function myMiddleware(req, res) {
+	console.log("A middleware function that will be applied to a particular route.")
+}
+
+// Define the application's entry route
+app.get("/", (req, res) => {
+	res.end("Hello, LiteNode!")
+})
+
+// Define a route for the sub application
+subApp.get("/sub", (req, res) => {
+	res.end("Sub application of the main LiteNode app")
+})
+
+// Merge subApp into the main LiteNode app
+// Apply myMiddleware to the "/sub" route only!
+app.merge(subApp, myMiddleware)
+
+// Nest subApp under the "/app" prefix in the main LiteNode app
+// Apply myMiddleware to the "/app/sub" route only!
+app.nest("/app", subApp, myMiddleware)
+```
+
+Nested routes are by default defined as a `LiteNode` instance that skips serving static assets to prevent unintended traversal of their middleware(s) in the reverse direction.
+
+Keep in mind the following from the above example:
+
+1. While `subApp` is set to prevent _serving_ static files, it can still _load_ the files from the "static" directory of `app` since it's merged into it.
+2. Assuming a defined `/app` route in the `app` instance, this route will not be affected by `myMiddleware`. This is because middleware applied to nested routes only impacts those routes and their children.
+3. Nested instance(s) of `LiteNode` are set to skip serving static assets by default.
 
 ### Starting the Server
 
