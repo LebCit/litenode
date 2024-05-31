@@ -1,6 +1,24 @@
-const { createServer } = require("node:http")
-const { readFileSync, readdirSync, statSync } = require("node:fs")
-const { extname, join } = require("node:path")
+let createServer, readFileSync, readdirSync, statSync, extname, join
+
+if (typeof require !== "undefined") {
+	const http = require("node:http")
+	const fs = require("node:fs")
+	const path = require("node:path")
+
+	createServer = http.createServer
+	;({ readFileSync, readdirSync, statSync } = fs)
+	;({ extname, join } = path)
+} else {
+	;(async () => {
+		const http = await import("node:http")
+		const fs = await import("node:fs")
+		const path = await import("node:path")
+
+		createServer = http.createServer
+		;({ readFileSync, readdirSync, statSync } = fs)
+		;({ extname, join } = path)
+	})()
+}
 
 class LiteNode {
 	#rootNode
@@ -16,8 +34,11 @@ class LiteNode {
 		this.#errorHandler = null
 		this.#middlewareStack = []
 		this.#directory = directory
-		this.#staticAssetLoader = new StaticAssetLoader(directory)
-		this.#staticAssetLoader.serveStaticAssets(this)
+
+		if (directory !== "__NO_STATIC_DIR__") {
+			this.#staticAssetLoader = new StaticAssetLoader(directory)
+			this.#staticAssetLoader.serveStaticAssets(this)
+		}
 	}
 
 	#addRoute(httpMethod, routePath, ...handlers) {
@@ -249,22 +270,22 @@ class LiteNode {
 	}
 
 	#nestNodes(currentNode, nodeToNest, prefix, middlewares = []) {
-		const newRouter = new LiteNode()
-		this.#generateNestedRoutes(nodeToNest, prefix, newRouter, middlewares)
+		const newRouter = new LiteNode("__NO_STATIC_DIR__")
+		this.#generateNestedRoutes(nodeToNest, prefix, newRouter)
 		this.#mergeNodes(currentNode, newRouter.#rootNode, middlewares)
 	}
 
-	#generateNestedRoutes(node, prefix, newRouter, middlewares = []) {
+	#generateNestedRoutes(node, prefix, newRouter) {
 		for (const [method, handlers] of Object.entries(node.handler)) {
-			newRouter.#addRoute(method, prefix, ...middlewares, ...handlers)
+			newRouter.#addRoute(method, prefix, ...handlers)
 		}
 
 		for (const [pathSegment, subNode] of Object.entries(node.children)) {
-			this.#generateNestedRoutes(subNode, `${prefix}/${pathSegment}`, newRouter, middlewares)
+			this.#generateNestedRoutes(subNode, `${prefix}/${pathSegment}`, newRouter)
 		}
 
 		if (node.param) {
-			this.#generateNestedRoutes(node.param, `${prefix}/:${node.param.paramName}`, newRouter, middlewares)
+			this.#generateNestedRoutes(node.param, `${prefix}/:${node.param.paramName}`, newRouter)
 		}
 	}
 
@@ -340,8 +361,13 @@ class StaticAssetLoader {
 	}
 
 	serveStaticAssets(router) {
+		if (this.directory === "__NO_STATIC_DIR__") {
+			return
+		}
+
 		try {
 			const staticAssets = this.#getFiles(this.directory)
+
 			staticAssets.forEach((el) => {
 				router.get(`/${el}`, (req, res) => {
 					const filePath = join(process.cwd(), `/${el}`)
@@ -372,6 +398,4 @@ class StaticAssetLoader {
 	}
 }
 
-module.exports = {
-	LiteNode,
-}
+module.exports = { LiteNode }
