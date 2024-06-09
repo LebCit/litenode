@@ -19,6 +19,7 @@ declare module "litenode" {
 		merge(routerToMerge: LiteNode, ...middlewares: RouteHandler[]): void
 		nest(prefix: string, routerToNest: LiteNode, ...middlewares: RouteHandler[]): this
 		use(middleware: RouteHandler): this
+		renderToFile(template: string, data: object, outputPath: string): Promise<void>
 		startServer(port?: number): Server
 	}
 
