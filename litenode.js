@@ -3,20 +3,28 @@ let createServer, readFileSync, readdirSync, statSync, writeFile, extname, join,
 if (typeof require !== "undefined") {
 	const http = require("node:http")
 	const fs = require("node:fs")
+	const fsPromises = require("node:fs/promises")
 	const path = require("node:path")
+	const ste = require("./ste.js")
 
 	createServer = http.createServer
 	;({ readFileSync, readdirSync, statSync } = fs)
+	;({ writeFile } = fsPromises)
 	;({ extname, join } = path)
+	;({ STE } = ste)
 } else {
 	;(async () => {
 		const http = await import("node:http")
 		const fs = await import("node:fs")
+		const fsPromises = await import("node:fs/promises")
 		const path = await import("node:path")
+		const ste = await import("./ste.js")
 
 		createServer = http.createServer
 		;({ readFileSync, readdirSync, statSync } = fs)
+		;({ writeFile } = fsPromises)
 		;({ extname, join } = path)
+		STE = ste.STE
 	})()
 }
 
@@ -27,6 +35,7 @@ class LiteNode {
 	#middlewareStack
 	#directory
 	#staticAssetLoader
+	#templateEngine
 
 	constructor(directory = "static") {
 		this.#rootNode = new RouteNode()
@@ -34,6 +43,7 @@ class LiteNode {
 		this.#errorHandler = null
 		this.#middlewareStack = []
 		this.#directory = directory
+		this.#templateEngine = new STE("views")
 
 		if (directory !== "__NO_STATIC_DIR__") {
 			this.#staticAssetLoader = new StaticAssetLoader(directory)
@@ -107,9 +117,23 @@ class LiteNode {
 	onError(handler) {
 		this.#errorHandler = handler
 	}
+	#extendResponse(nativeRes) {
+		nativeRes.render = async (template, data) => {
+			try {
+				const html = await this.#templateEngine.render(template, data)
+				nativeRes.setHeader("Content-Type", "text/html")
+				nativeRes.end(html)
+			} catch (error) {
+				nativeRes.writeHead(500)
+				nativeRes.end(`Error rendering template: ${error.message}`)
+			}
+		}
+	}
 
 	async #handleRequest(nativeReq, nativeRes) {
 		try {
+			this.#extendResponse(nativeRes)
+
 			await this.#applyMiddleware(nativeReq, nativeRes)
 
 			const { method, url } = nativeReq
@@ -301,6 +325,15 @@ class LiteNode {
 	use(middleware) {
 		this.#middlewareStack.push(middleware)
 		return this
+	}
+
+	async renderToFile(template, data, outputPath) {
+		try {
+			const html = await this.#templateEngine.render(template, data)
+			await writeFile(outputPath, html, "utf-8")
+		} catch (error) {
+			console.error(`Error rendering template or saving file: ${error.message}`)
+		}
 	}
 
 	startServer(port = 5000) {
