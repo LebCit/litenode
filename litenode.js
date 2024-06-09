@@ -1,4 +1,4 @@
-let createServer, readFileSync, readdirSync, statSync, extname, join
+let createServer, readFileSync, readdirSync, statSync, writeFile, extname, join, STE
 
 if (typeof require !== "undefined") {
 	const http = require("node:http")
