@@ -1,7 +1,7 @@
 {
     "name": "litenode",
-    "version": "1.1.0",
-    "description": "Fast, lightweight, and independent: A Node.js web framework featuring an integrated JSON body parser for effortless handling of POST requests, along with a built-in static asset loader for seamless file serving.",
+    "version": "1.2.0",
+    "description": "Lightweight and modular web framework",
     "types": "litenode.d.ts",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
@@ -17,9 +17,11 @@
         "json-body-parser",
         "node",
         "node.js",
+        "partials",
         "post-request",
         "router",
         "static-assets",
+        "template engine",
         "web",
         "web-server"
     ],
@@ -30,7 +32,7 @@
     "bugs": {
         "url": "https://github.com/LebCit/litenode/issues"
     },
-    "homepage": "https://github.com/LebCit/litenode",
+    "homepage": "https://litenode.pages.dev/",
     "exports": {
         ".": {
             "import": "./litenode.js",
