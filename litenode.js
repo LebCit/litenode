@@ -142,6 +142,11 @@ class LiteNode {
 				nativeRes.end(`Error rendering template: ${error.message}`)
 			}
 		}
+
+		nativeRes.status = (code) => {
+			nativeRes.statusCode = code
+			return nativeRes
+		}
 	}
 
 	async #handleRequest(nativeReq, nativeRes) {
