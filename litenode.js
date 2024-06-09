@@ -122,6 +122,11 @@ class LiteNode {
 			nativeRes.writeHead(statusCode, { Location: location })
 			nativeRes.end()
 		}
+
+		nativeRes.txt = (text) => {
+			nativeRes.setHeader("Content-Type", "text/plain")
+			nativeRes.end(text)
+		}
 		nativeRes.render = async (template, data) => {
 			try {
 				const html = await this.#templateEngine.render(template, data)
