@@ -117,6 +117,28 @@ class LiteNode {
 	onError(handler) {
 		this.#errorHandler = handler
 	}
+
+	#getContentType(filePath) {
+		const contentTypeMap = {
+			".css": "text/css",
+			".js": "application/javascript",
+			".mjs": "application/javascript",
+			".png": "image/png",
+			".jpg": "image/jpeg",
+			".jpeg": "image/jpeg",
+			".gif": "image/gif",
+			".avif": "image/avif",
+			".svg": "image/svg+xml",
+			".ico": "image/x-icon",
+			".webp": "image/webp",
+			".html": "text/html",
+			".txt": "text/plain",
+		}
+
+		const extName = extname(filePath)
+		return contentTypeMap[extName] || "application/octet-stream"
+	}
+
 	#extendResponse(nativeRes) {
 		nativeRes.redirect = (location, statusCode = 302) => {
 			nativeRes.writeHead(statusCode, { Location: location })
@@ -132,6 +154,19 @@ class LiteNode {
 			nativeRes.setHeader("Content-Type", "application/json")
 			nativeRes.end(JSON.stringify(data))
 		}
+
+		nativeRes.sendFile = (filePath) => {
+			try {
+				const fileContents = readFileSync(filePath)
+				const contentType = this.#getContentType(filePath)
+				nativeRes.setHeader("Content-Type", contentType)
+				nativeRes.end(fileContents)
+			} catch (err) {
+				nativeRes.writeHead(500)
+				nativeRes.end("Internal Server Error")
+			}
+		}
+
 		nativeRes.render = async (template, data) => {
 			try {
 				const html = await this.#templateEngine.render(template, data)
