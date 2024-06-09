@@ -118,6 +118,10 @@ class LiteNode {
 		this.#errorHandler = handler
 	}
 	#extendResponse(nativeRes) {
+		nativeRes.redirect = (location, statusCode = 302) => {
+			nativeRes.writeHead(statusCode, { Location: location })
+			nativeRes.end()
+		}
 		nativeRes.render = async (template, data) => {
 			try {
 				const html = await this.#templateEngine.render(template, data)
