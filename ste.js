@@ -28,11 +28,18 @@ class STE {
 
 			let data = readFileSync(resolvedFilePath, "utf8")
 
+			data = this.#preprocessConditionals(data, dataObject)
+
 			for (const key in dataObject) {
 				if (dataObject.hasOwnProperty(key)) {
 					let value = dataObject[key]
 
-					if (typeof value === "object" || typeof value === "function") {
+					if (
+						typeof value === "object" ||
+						typeof value === "function" ||
+						typeof value === "boolean" ||
+						typeof value === "number"
+					) {
 						value = JSON.stringify(value)
 					}
 
@@ -55,6 +62,146 @@ class STE {
 				throw new Error(`Error reading ${filePath}: ${err.message}`)
 			}
 		}
+	}
+
+	#preprocessConditionals(content, dataObject) {
+		const evaluateCondition = (condition, dataObject) => {
+			try {
+				return evaluateSimpleExpression(condition, dataObject)
+			} catch (error) {
+				console.error("Error evaluating condition:", error)
+				return false
+			}
+		}
+
+		const evaluateSimpleExpression = (expression, dataObject) => {
+			if (expression.includes("&&")) {
+				return expression.split("&&").every((subExp) => evaluateSimpleExpression(subExp.trim(), dataObject))
+			}
+			if (expression.includes("||")) {
+				return expression.split("||").some((subExp) => evaluateSimpleExpression(subExp.trim(), dataObject))
+			}
+
+			const comparisonMatch = expression.match(/(.+?)(==|!=|<=|>=|<|>)(.+)/)
+			if (comparisonMatch) {
+				const left = comparisonMatch[1].trim()
+				const operator = comparisonMatch[2].trim()
+				const right = comparisonMatch[3].trim()
+				return evaluateComparison(left, operator, right, dataObject)
+			}
+
+			return !!dataObject[expression.trim()]
+		}
+
+		const evaluateComparison = (left, operator, right, dataObject) => {
+			const leftValue = resolveValue(left, dataObject)
+			const rightValue = resolveValue(right, dataObject)
+
+			switch (operator) {
+				case "==":
+					return leftValue == rightValue
+				case "!=":
+					return leftValue != rightValue
+				case "<":
+					return leftValue < rightValue
+				case ">":
+					return leftValue > rightValue
+				case "<=":
+					return leftValue <= rightValue
+				case ">=":
+					return leftValue >= rightValue
+				default:
+					return false
+			}
+		}
+
+		const resolveValue = (value, dataObject) => {
+			if (isNaN(value)) {
+				if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+					return value.slice(1, -1)
+				}
+				return dataObject[value.trim()]
+			}
+			return parseFloat(value)
+		}
+
+		const processInnerContent = (content, dataObject) => {
+			return this.#preprocessConditionals(content, dataObject)
+		}
+
+		const ifRegex = /{{#if\s+(.+?)}}([\s\S]*?){{\/if}}/g
+
+		content = content.replace(ifRegex, (match, condition, innerContent) => {
+			const conditionKey = condition.trim()
+			const conditionValue = evaluateCondition(conditionKey, dataObject)
+
+			if (conditionValue) {
+				const trueContent = innerContent.split(/{{#elseif.*}}|{{#else}}/)[0]
+				return processInnerContent(trueContent, dataObject)
+			} else {
+				const parts = innerContent.split(/({{#elseif\s+.*?}}|{{#else}})/)
+				let isElse = false
+
+				for (let i = 0; i < parts.length; i++) {
+					const part = parts[i].trim()
+
+					if (part.startsWith("{{#elseif")) {
+						const elseifCondition = part.match(/{{#elseif\s+(.*?)}}/)[1].trim()
+						const elseifConditionValue = evaluateCondition(elseifCondition, dataObject)
+
+						if (elseifConditionValue) {
+							return processInnerContent(parts[i + 1], dataObject)
+						}
+						i++
+					} else if (part === "{{#else}}") {
+						isElse = true
+					} else if (isElse) {
+						return processInnerContent(part, dataObject)
+					}
+				}
+				return ""
+			}
+		})
+
+		const notRegex = /{{#not\s+(.+?)}}([\s\S]*?){{\/not}}/g
+
+		content = content.replace(notRegex, (match, condition, innerContent) => {
+			const conditionKey = condition.trim()
+			const conditionValue = evaluateCondition(conditionKey, dataObject)
+
+			if (!conditionValue) {
+				return processInnerContent(innerContent, dataObject)
+			} else {
+				return ""
+			}
+		})
+
+		const eachRegex = /{{#each\s+(.+?)}}([\s\S]*?){{\/each}}/g
+
+		content = content.replace(eachRegex, (match, arrayKey, innerContent) => {
+			const arrayValue = dataObject[arrayKey.trim()]
+			if (Array.isArray(arrayValue)) {
+				return arrayValue
+					.map((item) => {
+						let itemContent = innerContent
+						if (typeof item === "object") {
+							for (const key in item) {
+								if (item.hasOwnProperty(key)) {
+									itemContent = itemContent.replace(new RegExp(`{{${key}}}`, "g"), item[key])
+								}
+							}
+						} else {
+							itemContent = itemContent.replace(/{{this}}/g, item)
+						}
+						return itemContent
+					})
+					.join("")
+			} else {
+				return ""
+			}
+		})
+
+		return content
 	}
 
 	#handleIncludes(content, dataObject) {
