@@ -2,7 +2,7 @@
 
 LiteNode is a lightweight and modular Node.js web framework designed to provide essential web server functionalities with a clean and intuitive API. It leverages modern JavaScript features while ensuring compatibility with both CommonJS and ES6 modules, making it versatile for various development environments. LiteNode is suitable for developers seeking a straightforward yet powerful solution for building web applications.
 
-<p align="center">
+<p align="center" style="font-size: xx-large;">
 	<a href="https://litenode.pages.dev/">Documentation</a>
 </p>
 
@@ -30,7 +30,7 @@ const app = new LiteNode()
 
 // Define a route
 app.get("/", (req, res) => {
-	res.txt("Hello, LiteNode!")
+    res.txt("Hello, LiteNode!")
 })
 
 // Start the server
@@ -39,12 +39,12 @@ app.startServer()
 
 ## Key Features
 
--   **Efficient Routing**: LiteNode provides a flexible routing system allowing you to define routes with various HTTP methods.
--   **Middleware Support**: Easily integrate middleware functions into your application to handle common tasks such as logging, authentication, etc.
--   **Integrated JSON Body Parser**: Simplify handling of POST requests with LiteNode's integrated JSON body parser.
--   **Static Asset Loader**: Serve static files effortlessly with LiteNode's built-in static asset loader.
--   **Error Handling**: Customize error handling with ease, ensuring robustness and reliability in your application.
--   **Templating**: LiteNode includes an integrated template engine for rendering HTML files.
+-   **Efficient Routing**: LiteNode provides a [flexible routing system](https://litenode.pages.dev/docs/routing/) allowing you to define routes with various HTTP methods.
+-   **Middleware Support**: Easily integrate [middleware functions](https://litenode.pages.dev/docs/middleware/) into your application to handle common tasks such as logging, authentication, etc.
+-   **Integrated JSON Body Parser**: Simplify handling of POST requests with [LiteNode's integrated JSON body parser](https://litenode.pages.dev/docs/json/).
+-   **Static Asset Loader**: Serve static files effortlessly with [LiteNode's built-in static asset loader](https://litenode.pages.dev/docs/serving-static-files/).
+-   **Error Handling**: Customize [error handling](https://litenode.pages.dev/docs/error-handling/) with ease, ensuring robustness and reliability in your application.
+-   **Templating**: LiteNode includes an [integrated template engine](https://litenode.pages.dev/docs/rendering-templates/) for rendering HTML files with [conditional logic, looping through arrays, and negating conditions](https://litenode.pages.dev/docs/ste-helpers/).
 
 ## Strengths
 
