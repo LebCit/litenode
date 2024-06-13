@@ -2,9 +2,11 @@
 
 LiteNode is a lightweight and modular Node.js web framework designed to provide essential web server functionalities with a clean and intuitive API. It leverages modern JavaScript features while ensuring compatibility with both CommonJS and ES6 modules, making it versatile for various development environments. LiteNode is suitable for developers seeking a straightforward yet powerful solution for building web applications.
 
-<p align="center" style="font-size: xx-large;">
+<p align="center">
 	<a href="https://litenode.pages.dev/">Documentation</a>
 </p>
+
+**Keep an eye out! I'll soon add a full tutorial link for the LiteNode Markdown-based app here.**
 
 ## Installation
 
@@ -45,6 +47,7 @@ app.startServer()
 -   **Static Asset Loader**: Serve static files effortlessly with [LiteNode's built-in static asset loader](https://litenode.pages.dev/docs/serving-static-files/).
 -   **Error Handling**: Customize [error handling](https://litenode.pages.dev/docs/error-handling/) with ease, ensuring robustness and reliability in your application.
 -   **Templating**: LiteNode includes an [integrated template engine](https://litenode.pages.dev/docs/rendering-templates/) for rendering HTML files with [conditional logic, looping through arrays, and negating conditions](https://litenode.pages.dev/docs/ste-helpers/).
+-   **Markdown**: With [LiteNode's support for Markdown](https://litenode.pages.dev/docs/markdown/), you can easily create content-driven applications with rich text formatting.
 
 ## Strengths
 
@@ -59,7 +62,7 @@ LiteNode is a versatile and efficient web framework for Node.js, offering a rang
 
 ## Origins
 
-LiteNode is a powerful and flexible Node.js web framework built on the foundation of [Velocy](https://github.com/ishtms/velocy). It extends and improves upon Velocy's features to provide a seamless development experience for building web applications.
+LiteNode is a powerful and flexible Node.js web framework built on the foundation of [Velocy](https://github.com/ishtms/velocy). It extends and improves upon Velocy's features to provide a seamless development experience for building web applications. You can read more about it in [LiteNode, Node.js Web Framework](https://lebcit.github.io/posts/litenode-nodejs-web-framework/).
 
 ## License
 
