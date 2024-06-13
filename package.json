@@ -1,6 +1,6 @@
 {
     "name": "litenode",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "description": "Lightweight and modular web framework",
     "types": "litenode.d.ts",
     "scripts": {
