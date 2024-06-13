@@ -1,4 +1,4 @@
-let createServer, readFileSync, readdirSync, statSync, writeFile, extname, join, STE
+let createServer, readFileSync, readdirSync, statSync, readdir, stat, writeFile, extname, join, relative, STE, SMP
 
 if (typeof require !== "undefined") {
 	const http = require("node:http")
@@ -6,12 +6,14 @@ if (typeof require !== "undefined") {
 	const fsPromises = require("node:fs/promises")
 	const path = require("node:path")
 	const ste = require("./ste.js")
+	const smp = require("./smp.js")
 
 	createServer = http.createServer
 	;({ readFileSync, readdirSync, statSync } = fs)
-	;({ writeFile } = fsPromises)
-	;({ extname, join } = path)
+	;({ readdir, stat, writeFile } = fsPromises)
+	;({ extname, join, relative } = path)
 	;({ STE } = ste)
+	;({ SMP } = smp)
 } else {
 	;(async () => {
 		const http = await import("node:http")
@@ -19,12 +21,14 @@ if (typeof require !== "undefined") {
 		const fsPromises = await import("node:fs/promises")
 		const path = await import("node:path")
 		const ste = await import("./ste.js")
+		const smp = await import("./smp.js")
 
 		createServer = http.createServer
 		;({ readFileSync, readdirSync, statSync } = fs)
-		;({ writeFile } = fsPromises)
-		;({ extname, join } = path)
+		;({ readdir, stat, writeFile } = fsPromises)
+		;({ extname, join, relative } = path)
 		STE = ste.STE
+		SMP = smp.SMP
 	})()
 }
 
@@ -36,6 +40,7 @@ class LiteNode {
 	#directory
 	#staticAssetLoader
 	#templateEngine
+	#parseMarkdownFile
 
 	constructor(directory = "static") {
 		this.#rootNode = new RouteNode()
@@ -44,6 +49,7 @@ class LiteNode {
 		this.#middlewareStack = []
 		this.#directory = directory
 		this.#templateEngine = new STE("views")
+		this.#parseMarkdownFile = new SMP()
 
 		if (directory !== "__NO_STATIC_DIR__") {
 			this.#staticAssetLoader = new StaticAssetLoader(directory)
@@ -388,6 +394,76 @@ class LiteNode {
 		} catch (error) {
 			console.error(`Error rendering template or saving file: ${error.message}`)
 		}
+	}
+
+	parseMarkdownFile(filePath) {
+		return this.#parseMarkdownFile.parseFrontmatter(filePath)
+	}
+
+	async #getMarkdownFiles(dir, fileList = []) {
+		const files = await readdir(dir, { withFileTypes: true })
+		await Promise.all(
+			files.map(async (file) => {
+				const filePath = join(dir, file.name)
+				const stats = await stat(filePath)
+				if (stats.isDirectory()) {
+					await this.#getMarkdownFiles(filePath, fileList)
+				} else if (filePath.endsWith(".md")) {
+					fileList.push(filePath)
+				}
+			})
+		)
+		return fileList
+	}
+
+	async parseMarkdownFileS(dir) {
+		const normalizedDir = dir.startsWith("/") ? dir.slice(1) : dir
+		const files = await this.#getMarkdownFiles(join("views", normalizedDir))
+		return Promise.all(
+			files.map((file) => {
+				const relativePath = relative("views", file)
+				return this.parseMarkdownFile(relativePath)
+			})
+		)
+	}
+
+	extractMarkdownProperties(arr, properties) {
+		return arr.map((obj) => {
+			const { frontmatter } = obj
+
+			if (!frontmatter) {
+				return properties.reduce((acc, prop) => {
+					acc[prop] = undefined
+					return acc
+				}, {})
+			}
+
+			return properties.reduce((acc, prop) => {
+				const value = prop.split(".").reduce((nestedAcc, key) => nestedAcc?.[key], frontmatter)
+				acc[prop] = value
+				return acc
+			}, {})
+		})
+	}
+
+	addIdsToHeadings(str) {
+		const regex = /<(h[1-6])(.*?)>(.*?)\s*{\s*.*#\s*(.*?)\s*}\s*<\/\1>/gi
+
+		return str.replace(regex, (match, tag, attributes, content, id) => {
+			// Normalize the ID
+			let normalizedId = id
+				.normalize("NFD")
+				.replace(/[\u0300-\u036f]/g, "")
+				.toLowerCase()
+				.replace(/[^a-zA-Z0-9-_ ]/g, "")
+				.replace(/_+/g, "-")
+				.replace(/\s+/g, "-")
+				.replace(/-+/g, "-")
+				.replace(/^-+/, "")
+				.replace(/-+$/, "")
+
+			return `<${tag}${attributes} id="${normalizedId}">${content}</${tag}>`
+		})
 	}
 
 	startServer(port = 5000) {
