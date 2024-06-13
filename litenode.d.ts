@@ -20,6 +20,18 @@ declare module "litenode" {
 		nest(prefix: string, routerToNest: LiteNode, ...middlewares: RouteHandler[]): this
 		use(middleware: RouteHandler): this
 		renderToFile(template: string, data: object, outputPath: string): Promise<void>
+		parseMarkdownFile(filePath: string): {
+			frontmatter: object
+			content: string
+			filePath: string
+			fileDir: string
+			fileName: string
+		}
+		parseMarkdownFileS(
+			dir: string
+		): Promise<{ frontmatter: object; content: string; filePath: string; fileDir: string; fileName: string }[]>
+		extractMarkdownProperties(arr: Array<{ frontmatter: object }>, properties: Array<string>): Array<object>
+		addIdsToHeadings(str: string): string
 		startServer(port?: number): Server
 	}
 
