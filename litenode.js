@@ -473,6 +473,38 @@ class LiteNode {
 		}, {})
 	}
 
+	#paginator(items, current_page = 1, per_page_items = 10) {
+		let page = current_page,
+			per_page = per_page_items,
+			offset = (page - 1) * per_page,
+			paginatedItems = items.slice(offset, offset + per_page),
+			total_pages = Math.ceil(items.length / per_page)
+
+		return {
+			page: page,
+			per_page: per_page,
+			prev_page: page - 1 > 0 ? page - 1 : null,
+			next_page: total_pages > page ? page + 1 : null,
+			total_files: items.length,
+			total_pages: total_pages,
+			data: paginatedItems,
+		}
+	}
+
+	async paginateMarkdownFiles(input, page = 1, perPage = 10) {
+		let parsedFiles
+
+		if (Array.isArray(input)) {
+			parsedFiles = input
+		} else if (typeof input === "string") {
+			parsedFiles = await this.parseMarkdownFileS(input)
+		} else {
+			throw new Error("Invalid input type for paginateMarkdownFiles. Must be an array or a string.")
+		}
+
+		return this.#paginator(parsedFiles, page, perPage)
+	}
+
 	}
 
 	startServer(port = 5000) {
