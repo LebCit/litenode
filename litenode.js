@@ -461,24 +461,18 @@ class LiteNode {
 		})
 	}
 
-	addIdsToHeadings(str) {
-		const regex = /<(h[1-6])(.*?)>(.*?)\s*{\s*.*#\s*(.*?)\s*}\s*<\/\1>/gi
+	async groupByMarkdownProperty(dir, properties, groupByField) {
+		const extractedProperties = await this.extractMarkdownProperties(dir, properties)
+		return extractedProperties.reduce((acc, item) => {
+			const groupValue = item[groupByField] || "Undefined"
+			if (!acc[groupValue]) {
+				acc[groupValue] = []
+			}
+			acc[groupValue].push(item)
+			return acc
+		}, {})
+	}
 
-		return str.replace(regex, (match, tag, attributes, content, id) => {
-			// Normalize the ID
-			let normalizedId = id
-				.normalize("NFD")
-				.replace(/[\u0300-\u036f]/g, "")
-				.toLowerCase()
-				.replace(/[^a-zA-Z0-9-_ ]/g, "")
-				.replace(/_+/g, "-")
-				.replace(/\s+/g, "-")
-				.replace(/-+/g, "-")
-				.replace(/^-+/, "")
-				.replace(/-+$/, "")
-
-			return `<${tag}${attributes} id="${normalizedId}">${content}</${tag}>`
-		})
 	}
 
 	startServer(port = 5000) {
