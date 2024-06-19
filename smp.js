@@ -17,7 +17,6 @@ class SMP {
 	}
 
 	parseFrontmatter(filePath) {
-		// Normalize filePath to remove leading slashes
 		const normalizedFilePath = filePath.startsWith("/") ? filePath.slice(1) : filePath
 		const fullPath = path.join(this.baseDir, normalizedFilePath)
 
@@ -57,13 +56,67 @@ class SMP {
 			throw new Error(`Error parsing frontmatter: ${error.message}`)
 		}
 
+		const markdownContent = contentLines.join("\n").trim()
+
+		const { markdownWithoutCodeBlocks, codeBlocks } = this.#extractCodeBlocks(markdownContent)
+
+		const transformedMarkdown = this.#transformHeadingsToHtml(markdownWithoutCodeBlocks)
+		const markdownWithIDs = this.#addIdsToHeadings(transformedMarkdown)
+
+		const finalContent = this.#reinsertCodeBlocks(markdownWithIDs, codeBlocks)
+
 		return {
 			frontmatter,
-			content: contentLines.join("\n").trim(),
+			content: finalContent,
 			filePath: fullPath.split(path.sep).join("/"),
 			fileDir: path.dirname(normalizedFilePath).split(path.sep).join("/"),
 			fileName: path.basename(normalizedFilePath),
 		}
+	}
+
+	#transformHeadingsToHtml(markdown) {
+		for (let level = 6; level >= 1; level--) {
+			const regex = new RegExp(`^${"#".repeat(level)} (.*$)`, "gim")
+			const replacement = `<h${level}>$1</h${level}>`
+			markdown = markdown.replace(regex, replacement)
+		}
+
+		return markdown
+	}
+
+	#addIdsToHeadings(str) {
+		const regex = /<(h[1-6])(.*?)>(.*?)\s*{\s*.*#\s*(.*?)\s*}\s*<\/\1>/gi
+
+		return str.replace(regex, (match, tag, attributes, content, id) => {
+			let normalizedId = id
+				.normalize("NFD")
+				.replace(/[\u0300-\u036f]/g, "")
+				.toLowerCase()
+				.replace(/[^a-zA-Z0-9-_ ]/g, "")
+				.replace(/_+/g, "-")
+				.replace(/\s+/g, "-")
+				.replace(/-+/g, "-")
+				.replace(/^-+/, "")
+				.replace(/-+$/, "")
+
+			return `<${tag}${attributes} id="${normalizedId}">${content}</${tag}>`
+		})
+	}
+
+	#extractCodeBlocks(markdown) {
+		const codeBlockRegex = /(```[\s\S]*?```)/g
+		const codeBlocks = []
+
+		const markdownWithoutCodeBlocks = markdown.replace(codeBlockRegex, (match) => {
+			codeBlocks.push(match)
+			return `{{CODE_BLOCK_${codeBlocks.length - 1}}}`
+		})
+
+		return { markdownWithoutCodeBlocks, codeBlocks }
+	}
+
+	#reinsertCodeBlocks(markdown, codeBlocks) {
+		return markdown.replace(/{{CODE_BLOCK_(\d+)}}/g, (match, index) => codeBlocks[index])
 	}
 
 	#parseFrontmatterLines(lines) {
