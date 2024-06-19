@@ -1,13 +1,13 @@
-let readFileSync, join
+let readFile, join
 
 if (typeof require !== "undefined") {
-	;({ readFileSync } = require("node:fs"))
+	;({ readFile } = require("node:fs/promises"))
 	;({ join } = require("node:path"))
 } else {
 	;(async () => {
-		const fs = await import("fs")
-		const path = await import("path")
-		readFileSync = fs.readFileSync
+		const fs = await import("node:fs/promises")
+		const path = await import("node:path")
+		readFile = fs.readFile
 		join = path.join
 	})()
 }
@@ -18,7 +18,7 @@ class STE {
 		this.#baseDir = baseDir
 	}
 
-	render(filePath, dataObject) {
+	async render(filePath, dataObject) {
 		try {
 			if (!filePath.endsWith(".html")) {
 				throw new Error(`File ${filePath} is not an HTML file`)
@@ -26,7 +26,7 @@ class STE {
 
 			const resolvedFilePath = join(this.#baseDir, filePath)
 
-			let data = readFileSync(resolvedFilePath, "utf8")
+			let data = await readFile(resolvedFilePath, { encoding: "utf8" })
 
 			data = this.#preprocessConditionals(data, dataObject)
 
@@ -204,13 +204,13 @@ class STE {
 		return content
 	}
 
-	#handleIncludes(content, dataObject) {
+	async #handleIncludes(content, dataObject) {
 		const includeRegex = /{{include\(["'](.+?)["']\)}}/g
 		let match
 		while ((match = includeRegex.exec(content))) {
 			const includeFilePath = match[1]
 			try {
-				const renderedIncludeData = this.render(includeFilePath, dataObject)
+				const renderedIncludeData = await this.render(includeFilePath, dataObject)
 				content = content.replace(match[0], renderedIncludeData)
 			} catch (error) {
 				throw new Error(`Error including ${includeFilePath}: ${error.message}`)
