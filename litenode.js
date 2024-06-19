@@ -427,8 +427,23 @@ class LiteNode {
 		)
 	}
 
-	extractMarkdownProperties(arr, properties) {
-		return arr.map((obj) => {
+	async extractMarkdownProperties(input, properties) {
+		let parsedFiles
+
+		if (Array.isArray(input)) {
+			parsedFiles = input
+		} else if (typeof input === "string") {
+			if (input.endsWith(".md")) {
+				const parsedFile = await this.parseMarkdownFile(input)
+				parsedFiles = [parsedFile]
+			} else {
+				parsedFiles = await this.parseMarkdownFileS(input)
+			}
+		} else {
+			throw new Error("Invalid input type for extractMarkdownProperties. Must be an array or a string.")
+		}
+
+		return parsedFiles.map((obj) => {
 			const { frontmatter } = obj
 
 			if (!frontmatter) {
