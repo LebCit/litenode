@@ -3,10 +3,13 @@
 LiteNode is a lightweight and modular Node.js web framework designed to provide essential web server functionalities with a clean and intuitive API. It leverages modern JavaScript features while ensuring compatibility with both CommonJS and ES6 modules, making it versatile for various development environments. LiteNode is suitable for developers seeking a straightforward yet powerful solution for building web applications.
 
 <p align="center">
-	<a href="https://litenode.pages.dev/">Documentation</a>
+    Please check weekly or at most every two weeks for new updates and features.<br>
+    <a href="https://litenode.pages.dev/">Documentation</a>
 </p>
 
-**Keep an eye out! I'll soon add a full tutorial link for the LiteNode Markdown-based app here.**
+<p align="center">
+    <a href="https://lebcit.github.io/posts/ultimate-markdown-based-application-tutorial-in-node-js/">Dive into My Ultimate Markdown-based Application Tutorial in Node.js!</a>
+</p>
 
 ## Installation
 
@@ -32,7 +35,7 @@ const app = new LiteNode()
 
 // Define a route
 app.get("/", (req, res) => {
-    res.txt("Hello, LiteNode!")
+	res.txt("Hello, LiteNode!")
 })
 
 // Start the server
