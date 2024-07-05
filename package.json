@@ -1,8 +1,10 @@
 {
     "name": "litenode",
-    "version": "2.1.1",
+    "version": "3.0.0",
     "description": "Lightweight and modular web framework",
-    "types": "litenode.d.ts",
+    "main": "./core/LiteNode/LiteNode.js",
+    "type": "module",
+    "types": "types/litenode.d.ts",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
@@ -32,11 +34,5 @@
     "bugs": {
         "url": "https://github.com/LebCit/litenode/issues"
     },
-    "homepage": "https://litenode.pages.dev/",
-    "exports": {
-        ".": {
-            "import": "./litenode.js",
-            "require": "./litenode.js"
-        }
-    }
+    "homepage": "https://litenode.pages.dev/"
 }
