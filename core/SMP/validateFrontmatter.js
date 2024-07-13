@@ -3,11 +3,13 @@ export function validateFrontmatter(lines) {
 		if (!line.startsWith("#") && line.includes(":")) {
 			const [key, ...valueParts] = line.split(":")
 			const value = valueParts.join(":").trim()
+
 			if (!key.trim()) {
 				throw new Error(`Malformed frontmatter at line ${index + 1}: Missing key`)
 			}
+
 			if (value === "" || value.endsWith(":")) {
-				return
+				throw new Error(`Malformed frontmatter at line ${index + 1}: Missing or incomplete value`)
 			}
 
 			if (key.trim().toLowerCase().endsWith("_date")) {
@@ -26,22 +28,18 @@ export function validateFrontmatter(lines) {
 					throw new Error(`Malformed frontmatter at line ${index + 1}: Invalid number format`)
 				}
 			} else if (value.toLowerCase() === "true" || value.toLowerCase() === "false") {
+				// Valid boolean value
 			} else if (/^\[.*\]$/.test(value)) {
-				if (!/^\[([^\]]*)\]$/.test(value)) {
-					throw new Error(`Malformed frontmatter at line ${index + 1}: Invalid array format`)
-				}
 				const elements = value.slice(1, -1).split(",")
 				elements.forEach((element) => {
 					if (element.trim() === "") {
 						throw new Error(`Malformed frontmatter at line ${index + 1}: Empty array element`)
 					}
 				})
-				if (elements.length > 1) {
-					const originalArrayString = value.slice(1, -1).trim()
-					const reconstructedArrayString = elements.map((e) => e.trim()).join(", ")
-					if (originalArrayString !== reconstructedArrayString) {
-						throw new Error(`Malformed frontmatter at line ${index + 1}: Invalid array separator`)
-					}
+				const originalArrayString = value.slice(1, -1).trim()
+				const reconstructedArrayString = elements.map((e) => e.trim()).join(", ")
+				if (originalArrayString !== reconstructedArrayString) {
+					throw new Error(`Malformed frontmatter at line ${index + 1}: Invalid array separator`)
 				}
 			} else {
 				if (/[^a-zA-Z0-9_ \-]/.test(value)) {
