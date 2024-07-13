@@ -15,27 +15,7 @@ export class STE {
 
 			data = preprocessConditionals(data, dataObject)
 
-			for (const key in dataObject) {
-				if (dataObject.hasOwnProperty(key)) {
-					let value = dataObject[key]
-
-					if (
-						typeof value === "object" ||
-						typeof value === "function" ||
-						typeof value === "boolean" ||
-						typeof value === "number"
-					) {
-						value = JSON.stringify(value)
-					}
-
-					if (key.startsWith("html_")) {
-						data = data.replace(new RegExp(`{{${key}}}`, "g"), value)
-					} else {
-						const escapedValue = escapeHtml(value)
-						data = data.replace(new RegExp(`{{${key}}}`, "g"), escapedValue)
-					}
-				}
-			}
+			data = this.replacePlaceholders(data, dataObject)
 
 			data = await handleIncludes(data, dataObject, this.#baseDir, this.render.bind(this))
 
@@ -47,5 +27,32 @@ export class STE {
 				throw new Error(`Error reading ${filePath}: ${err.message}`)
 			}
 		}
+	}
+
+	replacePlaceholders(template, data, prefix = "") {
+		for (const key in data) {
+			if (data.hasOwnProperty(key)) {
+				let value = data[key]
+				const fullKey = prefix ? `${prefix}.${key}` : key
+
+				if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+					template = this.replacePlaceholders(template, value, fullKey)
+				} else {
+					if (
+						typeof value === "object" ||
+						typeof value === "function" ||
+						typeof value === "boolean" ||
+						typeof value === "number"
+					) {
+						value = JSON.stringify(value)
+					}
+
+					const escapedValue = key.startsWith("html_") ? value : escapeHtml(value)
+					const regex = new RegExp(`{{${fullKey}}}`, "g")
+					template = template.replace(regex, escapedValue)
+				}
+			}
+		}
+		return template
 	}
 }
