@@ -1,8 +1,6 @@
 export const processEach = (content, dataObject, eachCounter = 0) => {
 	const resolveDotNotation = (value, dataObject) => {
-		return value
-			.split(".")
-			.reduce((obj, key) => (obj && obj[key] !== "undefined" ? obj[key] : undefined), dataObject)
+		return value.split(".").reduce((obj, key) => (obj && obj[key] !== undefined ? obj[key] : undefined), dataObject)
 	}
 
 	const eachRegex = new RegExp(
@@ -19,12 +17,10 @@ export const processEach = (content, dataObject, eachCounter = 0) => {
 					let itemContent = innerContent
 
 					if (typeof item === "object") {
-						for (const key in item) {
-							if (item.hasOwnProperty(key)) {
-								const itemRegex = new RegExp(`{{${key}}}`, "g")
-								itemContent = itemContent.replace(itemRegex, item[key])
-							}
-						}
+						itemContent = itemContent.replace(/{{(.*?)}}/g, (placeholder, key) => {
+							const resolvedValue = resolveDotNotation(key.trim(), item)
+							return resolvedValue !== undefined ? resolvedValue : placeholder
+						})
 					} else {
 						itemContent = itemContent.replace(/{{this}}/g, item)
 					}
