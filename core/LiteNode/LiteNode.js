@@ -23,6 +23,7 @@ import { paginateMarkdownFiles } from "./methods/markdown/paginateMarkdownFiles.
 // Internal Utility functions
 import { generateTOC } from "../utils/generateTOC.js"
 import { jsonHandler } from "../utils/jsonHandler.js"
+import { checkForUpdate } from "../utils/updateChecker.js"
 
 export class LiteNode {
 	#rootNode
@@ -177,13 +178,17 @@ export class LiteNode {
 		return generateTOC(input)
 	}
 
-	startServer(port = 5000) {
-		return http
-			.createServer((req, res) => {
-				this.#handleRequest(req, res)
-			})
-			.listen(port, () => {
-				console.log(`App @ http://localhost:${port}`)
-			})
+	async startServer(port = 5000) {
+		try {
+			await checkForUpdate()
+		} catch (err) {
+			console.error("Error checking for updates:", err)
+		}
+
+		http.createServer((req, res) => {
+			this.#handleRequest(req, res)
+		}).listen(port, () => {
+			console.log(`App @ http://localhost:${port}`)
+		})
 	}
 }
