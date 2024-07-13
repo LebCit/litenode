@@ -45,4 +45,17 @@ export function extendResponse(nativeRes) {
 		nativeRes.statusCode = code
 		return nativeRes
 	}
+
+	nativeRes.html = (html, statusCode = 200) => {
+		try {
+			nativeRes.setHeader("Content-Type", "text/html")
+			nativeRes.statusCode = statusCode
+			nativeRes.end(html)
+		} catch (error) {
+			console.error("Error sending HTML response:", error)
+			nativeRes.statusCode = 500
+			nativeRes.setHeader("Content-Type", "text/plain")
+			nativeRes.end("Internal Server Error")
+		}
+	}
 }
