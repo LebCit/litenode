@@ -76,6 +76,17 @@ declare module "litenode" {
 		 * @see {@link https://litenode.pages.dev/docs/send-html|HTML Documentation}
 		 */
 		html(html: string, statusCode?: number): void
+
+		/**
+		 * Sends an XML response.
+		 *
+		 * @param xmlContent - The XML content to send as the response.
+		 * @param statusCode - The HTTP status code to send (default is 200).
+		 * @example
+		 * res.xml("<response><message>Hello, world!</message></response>");
+		 * @see {@link https://litenode.pages.dev/docs/send-xml|XML Documentation}
+		 */
+		xml(xmlContent: string, statusCode?: number): void
 	}
 
 	// RouteHandler interface using CustomRequest and CustomResponse
