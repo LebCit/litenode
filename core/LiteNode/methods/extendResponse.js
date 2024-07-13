@@ -58,4 +58,17 @@ export function extendResponse(nativeRes) {
 			nativeRes.end("Internal Server Error")
 		}
 	}
+
+	nativeRes.xml = (xmlContent, statusCode = 200) => {
+		try {
+			nativeRes.setHeader("Content-Type", "application/xml")
+			nativeRes.statusCode = statusCode
+			nativeRes.end(xmlContent)
+		} catch (error) {
+			console.error("Error sending XML response:", error)
+			nativeRes.statusCode = 500
+			nativeRes.setHeader("Content-Type", "text/plain")
+			nativeRes.end("Internal Server Error")
+		}
+	}
 }
