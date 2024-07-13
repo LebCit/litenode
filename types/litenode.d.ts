@@ -65,6 +65,17 @@ declare module "litenode" {
 		 * @see {@link https://litenode.pages.dev/docs/routing/#status|Status Documentation}
 		 */
 		status(code: number): this
+
+		/**
+		 * Sends an HTML response.
+		 *
+		 * @param html - The HTML content to send as the response.
+		 * @param statusCode - The HTTP status code to send (default is 200).
+		 * @example
+		 * res.html("<h1>Hello, world!</h1>");
+		 * @see {@link https://litenode.pages.dev/docs/send-html|HTML Documentation}
+		 */
+		html(html: string, statusCode?: number): void
 	}
 
 	// RouteHandler interface using CustomRequest and CustomResponse
