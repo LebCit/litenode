@@ -263,7 +263,7 @@ declare module "litenode" {
 		 * Parses a markdown file and extracts frontmatter and content.
 		 *
 		 * @param filePath - The path to the markdown file.
-		 * @returns An object containing frontmatter, content, filePath, fileDir, and fileName.
+		 * @returns An object containing frontmatter, content, filePath, fileDir, fileName and fileBaseName.
 		 * @example
 		 * const { frontmatter, content } = app.parseMarkdownFile("path/to/file.md");
 		 *
@@ -275,21 +275,29 @@ declare module "litenode" {
 			filePath: string
 			fileDir: string
 			fileName: string
+			fileBaseName: string
 		}
 
 		/**
 		 * Parses all markdown files in a directory and extracts their frontmatter and content.
 		 *
 		 * @param dir - The directory containing the markdown files.
-		 * @returns A promise that resolves to an array of objects containing frontmatter, content, filePath, fileDir, and fileName.
+		 * @returns A promise that resolves to an array of objects containing frontmatter, content, filePath, fileDir, fileName and fileBaseName.
 		 * @example
 		 * const files = await app.parseMarkdownFileS("pages");
 		 *
 		 * @see {@link https://litenode.pages.dev/docs/markdown/#parse-markdown-files|ParseMarkdownFileS Documentation}
 		 */
-		parseMarkdownFileS(
-			dir: string
-		): Promise<{ frontmatter: object; content: string; filePath: string; fileDir: string; fileName: string }[]>
+		parseMarkdownFileS(dir: string): Promise<
+			{
+				frontmatter: object
+				content: string
+				filePath: string
+				fileDir: string
+				fileName: string
+				fileBaseName: string
+			}[]
+		>
 
 		/**
 		 * Extracts specified properties from parsed markdown files.
@@ -314,7 +322,14 @@ declare module "litenode" {
 		extractMarkdownProperties(
 			input:
 				| string
-				| { frontmatter: object; content: string; filePath: string; fileDir: string; fileName: string }[],
+				| {
+						frontmatter: object
+						content: string
+						filePath: string
+						fileDir: string
+						fileName: string
+						fileBaseName: string
+				  }[],
 			properties: Array<string>
 		): Promise<Array<object>>
 
@@ -356,7 +371,14 @@ declare module "litenode" {
 		paginateMarkdownFiles(
 			input:
 				| string
-				| { frontmatter: object; content: string; filePath: string; fileDir: string; fileName: string }[],
+				| {
+						frontmatter: object
+						content: string
+						filePath: string
+						fileDir: string
+						fileName: string
+						fileBaseName: string
+				  }[],
 			page?: number,
 			perPage?: number
 		): Promise<{
