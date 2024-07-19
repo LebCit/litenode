@@ -59,5 +59,6 @@ export function parseFrontmatter(filePath) {
 		filePath: fullPath.split(path.sep).join("/"),
 		fileDir: path.dirname(normalizedFilePath).split(path.sep).join("/"),
 		fileName: path.basename(normalizedFilePath),
+		fileBaseName: path.basename(normalizedFilePath, path.extname(normalizedFilePath)),
 	}
 }
