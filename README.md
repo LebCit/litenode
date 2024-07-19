@@ -1,6 +1,6 @@
 # LiteNode
 
-LiteNode is a lightweight and modular Node.js web framework designed to provide essential web server functionalities with a clean and intuitive API. It leverages modern JavaScript features while ensuring compatibility with both CommonJS and ES6 modules, making it versatile for various development environments. LiteNode is suitable for developers seeking a straightforward yet powerful solution for building web applications.
+LiteNode is a lightweight and modular Node.js web framework designed to provide essential web server functionalities with a clean and intuitive API. It leverages modern JavaScript features, making it versatile for various development environments. LiteNode is suitable for developers seeking a straightforward yet powerful solution for building web applications.
 
 <p align="center">
     <s>Please check weekly or at most every two weeks for new updates and features.</s><br>
