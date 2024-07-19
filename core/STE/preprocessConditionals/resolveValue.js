@@ -3,7 +3,16 @@ export const resolveValue = (value, dataObject) => {
 		if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
 			return value.slice(1, -1)
 		}
-		return dataObject[value.trim()]
+		const keys = value.trim().split(".")
+		let result = dataObject
+		for (let key of keys) {
+			if (result && key in result) {
+				result = result[key]
+			} else {
+				return undefined
+			}
+		}
+		return result
 	}
 	return parseFloat(value)
 }
