@@ -1,4 +1,5 @@
 import { evaluateComparison } from "./evaluateComparison.js"
+import { resolveValue } from "./resolveValue.js"
 
 export const evaluateSimpleExpression = (expression, dataObject) => {
 	if (expression.includes("&&")) {
@@ -16,5 +17,6 @@ export const evaluateSimpleExpression = (expression, dataObject) => {
 		return evaluateComparison(left, operator, right, dataObject)
 	}
 
-	return !!dataObject[expression.trim()]
+	// If no logical operator, resolve the value
+	return !!resolveValue(expression.trim(), dataObject)
 }
