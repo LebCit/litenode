@@ -1,6 +1,6 @@
 {
     "name": "litenode",
-    "version": "3.3.0",
+    "version": "3.3.1",
     "description": "Lightweight and modular web framework",
     "main": "./core/LiteNode/LiteNode.js",
     "type": "module",
