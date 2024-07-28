@@ -63,7 +63,6 @@ export class LiteNode {
 		this.#directory = directory
 		if (directory !== "__NO_STATIC_DIR__") {
 			this.#staticAssetLoader = new StaticAssetLoader(directory)
-			this.#staticAssetLoader.serveStaticAssets(this)
 		}
 	}
 
@@ -184,6 +183,10 @@ export class LiteNode {
 			await checkForUpdate()
 		} catch (err) {
 			console.error("Error checking for updates:", err)
+		}
+
+		if (this.#staticAssetLoader) {
+			this.#staticAssetLoader.serveStaticAssets(this)
 		}
 
 		http.createServer((req, res) => {
