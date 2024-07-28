@@ -46,8 +46,8 @@ app.startServer()
 
 -   **Efficient Routing**: LiteNode provides a [flexible routing system](https://litenode.pages.dev/docs/routing/) allowing you to define routes with various HTTP methods.
 -   **Middleware Support**: Easily integrate [middleware functions](https://litenode.pages.dev/docs/middleware/) into your application to handle common tasks such as logging, authentication, etc.
--   **Integrated Body Parser**: Simplify handling of POST requests with [LiteNode's integrated body parser](https://litenode.pages.dev/docs/body-parsing/), supporting both `application/json` and `application/x-www-form-urlencoded` content types.
--   **Static Asset Loader**: Serve static files effortlessly with [LiteNode's built-in static asset loader](https://litenode.pages.dev/docs/serving-static-files/).
+-   **Integrated Body Parser**: Simplify handling of POST requests with [LiteNode's integrated body parser](https://litenode.pages.dev/docs/body-parsing/), supporting `application/json`, `application/x-www-form-urlencoded`, and `multipart/form-data` content types.
+-   **Static Asset Loader**: Serve static files effortlessly with [LiteNode's built-in static asset loader](https://litenode.pages.dev/docs/serving-static-files/), without server restart.
 -   **Error Handling**: Customize [error handling](https://litenode.pages.dev/docs/error-handling/) with ease, ensuring robustness and reliability in your application.
 -   **Templating**: LiteNode includes an [integrated template engine](https://litenode.pages.dev/docs/rendering-templates/) for rendering HTML files with [conditional logic, looping through arrays, and negating conditions](https://litenode.pages.dev/docs/ste-helpers/).
 -   **Markdown**: With [LiteNode's support for Markdown](https://litenode.pages.dev/docs/markdown/), you can easily create content-driven applications with rich text formatting.
@@ -56,7 +56,7 @@ app.startServer()
 
 -   **Lightweight and Fast**: LiteNode is designed to be lightweight, ensuring quick response times and efficient handling of requests.
 -   **Modular Design**: The framework's modularity allows for easy customization and extension, enabling developers to add or modify functionalities as needed.
--   **Modern JavaScript Support**: LiteNode leverages ES6 features, making the codebase clean and modern while maintaining compatibility with CommonJS.
+-   **Modern JavaScript Support**: LiteNode leverages ES6 features, making the codebase clean and modern.
 -   **Comprehensive Built-in Features**: The framework includes essential web server features out of the box, reducing the need for additional dependencies and simplifying development.
 
 ## Conclusion
