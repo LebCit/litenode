@@ -13,16 +13,19 @@ export const processEach = (content, dataObject, eachCounter = 0) => {
 
 		if (Array.isArray(arrayValue)) {
 			return arrayValue
-				.map((item) => {
+				.map((item, index) => {
 					let itemContent = innerContent
 
 					if (typeof item === "object") {
 						itemContent = itemContent.replace(/{{(.*?)}}/g, (placeholder, key) => {
+							if (key.trim() === "@index") {
+								return index
+							}
 							const resolvedValue = resolveDotNotation(key.trim(), item)
 							return resolvedValue !== undefined ? resolvedValue : placeholder
 						})
 					} else {
-						itemContent = itemContent.replace(/{{this}}/g, item)
+						itemContent = itemContent.replace(/{{this}}/g, item).replace(/{{@index}}/g, index)
 					}
 
 					// Recursively process nested each blocks
