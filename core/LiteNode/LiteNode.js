@@ -22,7 +22,7 @@ import { paginateMarkdownFiles } from "./methods/markdown/paginateMarkdownFiles.
 
 // Internal Utility functions
 import { generateTOC } from "../utils/generateTOC.js"
-import { jsonHandler } from "../utils/jsonHandler.js"
+import { bodyParser } from "../utils/bodyParser.js"
 import { checkForUpdate } from "../utils/updateChecker.js"
 
 export class LiteNode {
@@ -85,7 +85,8 @@ export class LiteNode {
 	}
 
 	post(routePath, ...handlers) {
-		const allHandlers = handlers.slice(0, -1).concat(jsonHandler(handlers))
+		const customMaxRequestSize = typeof handlers[handlers.length - 1] === "number" ? handlers.pop() : null
+		const allHandlers = handlers.slice(0, -1).concat(bodyParser(handlers, customMaxRequestSize))
 		this.#addRoute("POST", routePath, ...allHandlers)
 		return this
 	}

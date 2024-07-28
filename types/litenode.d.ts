@@ -153,14 +153,20 @@ declare module "litenode" {
 		 *
 		 * @param routePath - The path for the route.
 		 * @param handlers - The handler functions for the route.
+		 * @param customMaxRequestSize - (Optional) Maximum request size in bytes. If not provided, defaults to 1MB.
 		 * @example
 		 * app.post("/submit", async (req, res) => {
 		 *   res.status(200).json({ success: true });
 		 * });
 		 *
+		 * @example
+		 * app.post("/upload", async (req, res) => {
+		 *   res.status(200).json({ success: true });
+		 * }, 5); // customMaxRequestSize of 5 MB
+		 *
 		 * @see {@link https://litenode.pages.dev/docs/routing/#post|Post Documentation}
 		 */
-		post(routePath: string, ...handlers: RouteHandler[]): this
+		post(routePath: string, ...handlers: (RouteHandler | number)[]): this
 
 		/**
 		 * Registers a PUT route handler.
