@@ -13,6 +13,7 @@ export function getContentType(extname) {
 		".webp": "image/webp",
 		".html": "text/html",
 		".txt": "text/plain",
+		".zip": "application/zip",
 	}
 	return contentTypeMap[extname] || "application/octet-stream"
 }
