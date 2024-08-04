@@ -1,5 +1,6 @@
 import { STE } from "../../STE/ste.js"
 import { getContentType } from "../../utils/getContentType.js"
+import { readFileSync } from "node:fs"
 
 export function extendResponse(nativeRes) {
 	nativeRes.redirect = (location, statusCode = 302) => {
