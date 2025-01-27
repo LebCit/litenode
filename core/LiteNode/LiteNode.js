@@ -13,12 +13,8 @@ import { addRoute } from "./methods/addRoute.js"
 import { handleRequest } from "./methods/handleRequest.js"
 import { mergeNodes } from "./methods/mergeNodes.js"
 
-// Internal Markdown functions
-import { parseMarkdownFile } from "./methods/markdown/parseMarkdownFile.js"
-import { parseMarkdownFileS } from "./methods/markdown/parseMarkdownFileS.js"
-import { extractMarkdownProperties } from "./methods/markdown/extractMarkdownProperties.js"
-import { groupByMarkdownProperty } from "./methods/markdown/groupByMarkdownProperty.js"
-import { paginateMarkdownFiles } from "./methods/markdown/paginateMarkdownFiles.js"
+// Internal Markdown handler
+import { MarkdownHandler } from "./methods/markdownHandler.js"
 
 // Internal Utility functions
 import { generateTOC } from "../utils/generateTOC.js"
@@ -35,6 +31,7 @@ export class LiteNode {
 	#handleRequest
 	#directory
 	#staticAssetLoader
+	#markdownHandler
 
 	constructor(directory = "static") {
 		this.#rootNode = new RouteNode()
@@ -64,6 +61,8 @@ export class LiteNode {
 		if (directory !== "__NO_STATIC_DIR__") {
 			this.#staticAssetLoader = new StaticAssetLoader(directory)
 		}
+
+		this.#markdownHandler = new MarkdownHandler() // Initialize the MarkdownHandler
 	}
 
 	printTree() {
@@ -150,28 +149,23 @@ export class LiteNode {
 	}
 
 	parseMarkdownFile(filePath) {
-		return parseMarkdownFile(filePath)
+		return this.#markdownHandler.parseMarkdownFile(filePath)
 	}
 
 	async parseMarkdownFileS(dir) {
-		return parseMarkdownFileS(dir, this.parseMarkdownFile.bind(this))
+		return this.#markdownHandler.parseMarkdownFileS(dir)
 	}
 
 	async extractMarkdownProperties(input, properties) {
-		return extractMarkdownProperties(
-			input,
-			properties,
-			this.parseMarkdownFile.bind(this),
-			this.parseMarkdownFileS.bind(this)
-		)
+		return this.#markdownHandler.extractMarkdownProperties(input, properties)
 	}
 
 	async groupByMarkdownProperty(dir, properties, groupByField) {
-		return groupByMarkdownProperty(dir, properties, groupByField, this.extractMarkdownProperties.bind(this))
+		return this.#markdownHandler.groupByMarkdownProperty(dir, properties, groupByField)
 	}
 
 	async paginateMarkdownFiles(input, page = 1, perPage = 10) {
-		return paginateMarkdownFiles(input, page, perPage, this.parseMarkdownFileS.bind(this))
+		return this.#markdownHandler.paginateMarkdownFiles(input, page, perPage)
 	}
 
 	generateTOC(input) {
