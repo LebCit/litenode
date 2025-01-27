@@ -1,4 +1,7 @@
 export function getContentType(extname) {
+	// Ensure the extension is in lowercase
+	const lowerExtname = extname.toLowerCase()
+
 	const contentTypeMap = {
 		".css": "text/css",
 		".js": "application/javascript",
@@ -14,6 +17,15 @@ export function getContentType(extname) {
 		".html": "text/html",
 		".txt": "text/plain",
 		".zip": "application/zip",
+		".json": "application/json",
+		".xml": "application/xml",
+		".pdf": "application/pdf",
+		".wav": "audio/wav",
+		".mp3": "audio/mpeg",
+		".mp4": "video/mp4",
+		".webm": "video/webm",
+		".ogg": "application/ogg",
 	}
-	return contentTypeMap[extname] || "application/octet-stream"
+
+	return contentTypeMap[lowerExtname] || "application/octet-stream"
 }
