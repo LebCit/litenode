@@ -1,58 +1,117 @@
-import { readFileContent } from "./fileHandler.js"
-import { preprocessConditionals } from "./preprocessConditionals/index.js"
-import { handleIncludes } from "./handleIncludes.js"
-import { escapeHtml } from "../utils/escapeHtml.js"
+import { Tokenizer } from "./syntax/Tokenizer.js"
+import { Parser } from "./parser/Parser.js"
+import { Evaluator } from "./evaluator/Evaluator.js"
 
 export class STE {
-	#baseDir = process.cwd()
+	#baseDir
+	#templateCache
+
+	/**
+	 * Creates a new instance of TemplateEngine
+	 * @param {string} baseDir - The base directory where template files are located
+	 * @param {Object} options - Configuration options
+	 */
 	constructor(baseDir) {
 		this.#baseDir = baseDir
+		this.#templateCache = new Map()
+		this.htmlVars = new Map() // Add persistent storage for HTML variables
 	}
 
-	async render(filePath, dataObject) {
+	/**
+	 * Renders a template from a file path
+	 * @param {string} filePath - The path to the template file
+	 * @param {Object} data - The data object containing values
+	 * @returns {Promise<string>} The rendered template
+	 */
+	async render(filePath, data) {
 		try {
-			let data = await readFileContent(this.#baseDir, filePath)
+			// Process the main template
+			const processed = await this.renderStringWithoutRestore(filePath, data)
 
-			data = preprocessConditionals(data, dataObject)
-
-			data = this.replacePlaceholders(data, dataObject)
-
-			data = await handleIncludes(data, dataObject, this.#baseDir, this.render.bind(this))
-
-			return data
-		} catch (err) {
-			if (err.message.startsWith("File")) {
-				throw err
-			} else {
-				throw new Error(`Error reading ${filePath}: ${err.message}`)
+			// Restore HTML content only at the very end
+			let result = processed
+			for (const { marker, value } of this.htmlVars.values()) {
+				result = result.replace(marker, value)
 			}
+
+			return result
+		} catch (error) {
+			throw new Error(`Template rendering failed for ${filePath}: ${error.message}`)
 		}
 	}
 
-	replacePlaceholders(template, data, prefix = "") {
-		for (const key in data) {
-			if (data.hasOwnProperty(key)) {
-				let value = data[key]
-				const fullKey = prefix ? `${prefix}.${key}` : key
+	/**
+	 * Reads a template file from the base directory
+	 * @private
+	 */
+	async #readFile(filePath) {
+		if (!filePath.endsWith(".html")) {
+			throw new Error("Invalid file type. Only HTML files are supported.")
+		}
 
-				if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-					template = this.replacePlaceholders(template, value, fullKey)
-				} else {
-					if (
-						typeof value === "object" ||
-						typeof value === "function" ||
-						typeof value === "boolean" ||
-						typeof value === "number"
-					) {
-						value = JSON.stringify(value)
-					}
+		try {
+			const { readFile } = await import("node:fs/promises")
+			const { join } = await import("node:path")
+			const path = join(this.#baseDir, filePath)
+			return await readFile(path, "utf8")
+		} catch (error) {
+			throw new Error(`File reading failed: ${error.message}`)
+		}
+	}
 
-					const escapedValue = key.startsWith("html_") ? value : escapeHtml(value)
-					const regex = new RegExp(`{{${fullKey}}}`, "g")
-					template = template.replace(regex, escapedValue)
+	// New method to render without restoring HTML content
+	// In ste.js
+	async renderStringWithoutRestore(filePath, data) {
+		try {
+			const content = await this.#readFile(filePath)
+			console.log("Initial data:", data) // Add this log
+
+			// Process any html_ variables in the data
+			// Add null check {} to prevent error if no data object is initialized
+			for (const [key, value] of Object.entries(data || {})) {
+				if (key.startsWith("html_") && !this.htmlVars.has(key)) {
+					const marker = `__HTML_${Math.random().toString(36).substring(2, 11)}__`
+					this.htmlVars.set(key, { marker, value })
+					data[key] = marker
 				}
 			}
+
+			// Process template
+			let processed = content
+			processed = await this.#processExpressions(processed, data)
+			return processed
+		} catch (error) {
+			throw new Error(`Template rendering failed for ${filePath}: ${error.message}`)
 		}
-		return template
+	}
+
+	/**
+	 * Processes expressions using tokenizer/parser/evaluator
+	 * @private
+	 */
+	async #processExpressions(content, data) {
+		try {
+			const tokenizer = new Tokenizer(content)
+			const tokens = tokenizer.scanTokens()
+
+			const parser = new Parser(tokens)
+			const ast = parser.parse()
+
+			const evaluator = new Evaluator(data, this) // 'this' → template engine reference
+
+			const result = await evaluator.evaluate(ast)
+			return result
+		} catch (error) {
+			throw new Error(`Expression processing failed: ${error.message}`)
+		}
+	}
+
+	clearCache() {
+		this.#templateCache.clear()
+		this.htmlVars.clear() // Clear HTML variables cache too
+	}
+
+	removeFromCache(template) {
+		this.#templateCache.delete(template)
 	}
 }
