@@ -25,11 +25,9 @@ export class Parser extends BaseParser {
 	}
 
 	parse() {
-		console.log("Starting parse")
 		const statements = []
 
 		while (!this.isAtEnd()) {
-			console.log("Current token:", this.peek())
 			if (this.match(TokenType.STRING)) {
 				statements.push({
 					type: "literal",
@@ -41,16 +39,13 @@ export class Parser extends BaseParser {
 					name: this.previous().literal,
 				})
 			} else if (this.match(TokenType.DOUBLE_BRACE_OPEN)) {
-				console.log("Found opening braces, next token:", this.peek())
 				statements.push(this.parseStatement())
 			} else {
 				const unexpectedToken = this.peek()
-				console.log("Unexpected token encountered:", unexpectedToken)
 				throw new Error(`Unexpected token: ${unexpectedToken.type} at position ${unexpectedToken.position}`)
 			}
 		}
 
-		console.log("Final AST:", { type: "template", body: statements })
 		return { type: "template", body: statements }
 	}
 

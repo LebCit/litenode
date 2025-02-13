@@ -64,7 +64,6 @@ export class STE {
 	async renderStringWithoutRestore(filePath, data) {
 		try {
 			const content = await this.#readFile(filePath)
-			console.log("Initial data:", data) // Add this log
 
 			// Process any html_ variables in the data
 			// Add null check {} to prevent error if no data object is initialized
