@@ -79,7 +79,7 @@ export const builtInFilters = {
 		return value || fallbacks.find((f) => f !== undefined && f !== null) || ""
 	},
 
-	dump: (value) => JSON.stringify(value, null, 2),
+	dump: (value) => `<pre>${JSON.stringify(value, null, 2)}</pre>`,
 
 	escape: (value) => {
 		if (typeof value !== "string") {
