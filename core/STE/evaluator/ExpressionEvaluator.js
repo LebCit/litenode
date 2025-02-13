@@ -12,7 +12,13 @@ export class ExpressionEvaluator extends BaseEvaluator {
 
 	async evaluateExpression(node) {
 		const result = await this.evaluator.evaluateNode(node.expression)
-		return result !== undefined ? result : ""
+		if (result !== undefined) {
+			if (Array.isArray(result)) {
+				return JSON.stringify(result) // Proper serialization of array values in template output
+			}
+			return result
+		}
+		return ""
 	}
 
 	async evaluateVariable(node) {

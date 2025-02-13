@@ -448,7 +448,10 @@ export const builtInFilters = {
 		return words.slice(0, wordCount).join(" ") + suffix
 	},
 
-	type: (value) => typeof value,
+	type: (value) => {
+		if (Array.isArray(value)) return "array"
+		return typeof value
+	},
 
 	uppercase: (value) => {
 		if (typeof value !== "string") {
