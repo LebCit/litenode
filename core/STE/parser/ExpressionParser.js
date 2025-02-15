@@ -7,7 +7,48 @@ export class ExpressionParser extends BaseParser {
 	}
 
 	parseExpression() {
-		return this.ternary()
+		return this.parseFilter() // Start with filter
+	}
+
+	// Check for filter first
+	parseFilter() {
+		// Get the complete expression first
+		let expr = this.ternary()
+
+		// Keep checking for more filters while we see pipe tokens
+		while (this.match(TokenType.PIPE_FILTER)) {
+			// Get the filter name - change IDENTIFIER to explicit filter name consume
+			const filterName = this.consume(TokenType.IDENTIFIER, "Expect filter name after '|'").lexeme
+
+			// Check for filter arguments
+			let args = []
+			if (this.match(TokenType.LPAREN)) {
+				if (!this.check(TokenType.RPAREN)) {
+					do {
+						if (this.check(TokenType.STRING)) {
+							this.advance()
+							args.push({
+								type: "literal",
+								value: this.previous().literal,
+							})
+						} else {
+							args.push(this.parseExpression())
+						}
+					} while (this.match(TokenType.COMMA))
+				}
+				this.consume(TokenType.RPAREN, "Expect ')' after filter arguments")
+			}
+
+			// Create filter node
+			expr = {
+				type: "filter",
+				expression: expr,
+				filter: filterName,
+				arguments: args,
+			}
+		}
+
+		return expr
 	}
 
 	ternary() {
@@ -113,7 +154,7 @@ export class ExpressionParser extends BaseParser {
 	unary() {
 		if (this.match(TokenType.MINUS, TokenType.NOT)) {
 			const operator = this.previous().type
-			const right = this.unary()
+			const right = this.unary() // Recursive unary
 			return {
 				type: "unary",
 				operator,
@@ -131,26 +172,16 @@ export class ExpressionParser extends BaseParser {
 			const lexeme = previousToken.lexeme
 			const wasQuoted = lexeme.startsWith('"') || lexeme.startsWith("'")
 
-			// Handle filters first if the next token is a pipe (|), allowing dots in the STRING before the pipe
-			// Otherwise "example.com" will be treated as a variable in this: {{"example.com" | toLink("Link")}}
-			if (this.match(TokenType.PIPE_FILTER)) {
-				return this.parseFilter({ type: "literal", value })
-			}
-
 			// Handle quoted strings in specific contexts
 			if (wasQuoted) {
-				// Case 1: Quoted strings in set value context
-				if (this.state.parsingSetValue) {
+				// Case 1: Quoted strings in set value context or object literal context
+				if (this.state.parsingSetValue || this.state.isInObjectLiteral) {
 					return { type: "literal", value }
 				}
 
-				// Case 2: Quoted strings in object literal context
-				if (this.state.isInObjectLiteral) {
-					return { type: "literal", value }
-				}
-
-				// Case 3: Quoted strings with dots, treated as variable names (outside include context)
-				if (!this.state.parsingInclude && value.includes(".")) {
+				// Case 2: Quoted strings with dots, treated as variable names (outside include context)
+				// Quoted strings with dots are only treated as variables if they're not being used in a filter
+				if (!this.state.parsingInclude && value.includes(".") && !this.check(TokenType.PIPE_FILTER)) {
 					return { type: "variable", name: value }
 				}
 			}
@@ -238,11 +269,6 @@ export class ExpressionParser extends BaseParser {
 				}
 			}
 
-			// Check for filter
-			if (this.match(TokenType.PIPE_FILTER)) {
-				return this.parseFilter(expr)
-			}
-
 			return expr
 		}
 
@@ -295,46 +321,5 @@ export class ExpressionParser extends BaseParser {
 			type: "object",
 			properties,
 		}
-	}
-
-	// Filter
-	parseFilter(expression) {
-		// Get the filter name
-		const filterName = this.consume(TokenType.IDENTIFIER, "Expect filter name after '|'").lexeme
-
-		// Check for filter arguments
-		let args = []
-		if (this.match(TokenType.LPAREN)) {
-			if (!this.check(TokenType.RPAREN)) {
-				do {
-					// If next token is a string, treat it as a literal
-					if (this.check(TokenType.STRING)) {
-						this.advance()
-						args.push({
-							type: "literal",
-							value: this.previous().literal,
-						})
-					} else {
-						args.push(this.parseExpression())
-					}
-				} while (this.match(TokenType.COMMA))
-			}
-			this.consume(TokenType.RPAREN, "Expect ')' after filter arguments")
-		}
-
-		// Create filter node
-		let filterNode = {
-			type: "filter",
-			expression: expression,
-			filter: filterName,
-			arguments: args,
-		}
-
-		// Check for chained filters
-		if (this.match(TokenType.PIPE_FILTER)) {
-			return this.parseFilter(filterNode)
-		}
-
-		return filterNode
 	}
 }

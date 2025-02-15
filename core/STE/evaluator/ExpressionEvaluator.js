@@ -71,15 +71,8 @@ export class ExpressionEvaluator extends BaseEvaluator {
 
 		try {
 			const args = await Promise.all(node.arguments.map((arg) => this.evaluator.evaluateNode(arg)))
-			if (node.filter === "toLink") {
-				if (args.length < 1 || args.length > 3) {
-					throw new Error(
-						"toLink filter expects 1 to 3 arguments: display text, external (optional), safe (optional)"
-					)
-				}
-				return filter(value, args[0], args[1] === true, args[2] === true)
-			}
-			return filter(value, ...args)
+			const result = filter(value, ...args)
+			return result
 		} catch (error) {
 			throw new Error(`Error applying filter '${node.filter}': ${error.message}`)
 		}
