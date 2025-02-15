@@ -48,6 +48,8 @@ export class Evaluator extends BaseEvaluator {
 				return await this.statementEvaluator.evaluateEach(node)
 			case "index_ref":
 				return this.state.currentIndex
+			case "key_ref":
+				return this.state.currentKey
 			case "this_ref":
 				return this.state.currentContext
 			case "include":

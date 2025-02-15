@@ -1,6 +1,7 @@
 export const TokenType = {
 	AND: "AND",
 	AT_INDEX: "AT_INDEX",
+	AT_KEY: "AT_KEY",
 	COLON: "COLON",
 	COMMENT_CLOSE: "COMMENT_CLOSE", // #}
 	COMMENT_OPEN: "COMMENT_OPEN", // {#

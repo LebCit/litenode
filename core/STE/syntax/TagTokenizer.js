@@ -67,9 +67,11 @@ export class TagTokenizer extends BaseTokenizer {
 	}
 
 	handleAtSymbol() {
-		// Check if it's @index
+		// Check if it's @index or @key
 		if (this.match("i") && this.match("n") && this.match("d") && this.match("e") && this.match("x")) {
 			this.addToken(TokenType.AT_INDEX)
+		} else if (this.match("k") && this.match("e") && this.match("y")) {
+			this.addToken(TokenType.AT_KEY)
 		} else {
 			throw new Error(`Unexpected @ syntax at position ${this.state.position}`)
 		}

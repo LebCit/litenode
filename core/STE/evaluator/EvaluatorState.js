@@ -3,6 +3,7 @@ export class EvaluatorState {
 		this.globalData = this.normalizeData(data)
 		this.contextStack = [this.globalData] // Stack to handle nested contexts
 		this.indexStack = [] // Stack to handle nested indices
+		this.keyStack = [] // Stack to handle nested keys
 		this.templateEngine = templateEngine // Store reference to template engine
 	}
 
@@ -19,5 +20,9 @@ export class EvaluatorState {
 
 	get currentIndex() {
 		return this.indexStack[this.indexStack.length - 1]
+	}
+
+	get currentKey() {
+		return this.keyStack[this.keyStack.length - 1]
 	}
 }

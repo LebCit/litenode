@@ -52,26 +52,49 @@ export class StatementEvaluator extends BaseEvaluator {
 
 	async evaluateEach(node) {
 		const iterable = await this.evaluator.evaluateNode(node.iterable)
-		if (!iterable || typeof iterable[Symbol.iterator] !== "function") {
-			throw new Error(`Cannot iterate over ${iterable}`)
-		}
+
+		// Handle both arrays and objects
 		let result = ""
 		let index = 0
-		for (const item of iterable) {
-			// Push the new context and index
-			this.state.contextStack.push(item)
-			this.state.indexStack.push(index)
 
-			try {
-				const bodyResults = await Promise.all(node.body.map((n) => this.evaluator.evaluateNode(n)))
-				result += bodyResults.join("")
-			} finally {
-				// Always pop the context and index, even if there's an error
-				this.state.contextStack.pop()
-				this.state.indexStack.pop()
+		if (Array.isArray(iterable)) {
+			// Existing array handling
+			for (const item of iterable) {
+				this.state.contextStack.push(item)
+				this.state.indexStack.push(index)
+				this.state.keyStack.push(index.toString())
+
+				try {
+					const bodyResults = await Promise.all(node.body.map((n) => this.evaluator.evaluateNode(n)))
+					result += bodyResults.join("")
+				} finally {
+					this.state.contextStack.pop()
+					this.state.indexStack.pop()
+					this.state.keyStack.pop()
+				}
+				index++
 			}
-			index++
+		} else if (iterable && typeof iterable === "object") {
+			// New object handling
+			for (const [key, value] of Object.entries(iterable)) {
+				this.state.contextStack.push(value)
+				this.state.indexStack.push(index)
+				this.state.keyStack.push(key)
+
+				try {
+					const bodyResults = await Promise.all(node.body.map((n) => this.evaluator.evaluateNode(n)))
+					result += bodyResults.join("")
+				} finally {
+					this.state.contextStack.pop()
+					this.state.indexStack.pop()
+					this.state.keyStack.pop()
+				}
+				index++
+			}
+		} else {
+			throw new Error(`Cannot iterate over ${iterable}`)
 		}
+
 		return result
 	}
 

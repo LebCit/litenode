@@ -233,6 +233,11 @@ export class StatementParser extends BaseParser {
 					body.push({
 						type: "index_ref",
 					})
+				} else if (this.match(TokenType.AT_KEY)) {
+					this.consume(TokenType.DOUBLE_BRACE_CLOSE, "Expect '}}' after @key")
+					body.push({
+						type: "key_ref",
+					})
 				} else if (this.match(TokenType.THIS)) {
 					this.consume(TokenType.DOUBLE_BRACE_CLOSE, "Expect '}}' after this")
 					body.push({
