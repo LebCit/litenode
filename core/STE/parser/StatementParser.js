@@ -245,6 +245,8 @@ export class StatementParser extends BaseParser {
 					})
 				} else if (this.match(TokenType.TAG_EACH)) {
 					body.push(this.parseEach())
+				} else if (this.match(TokenType.TAG_CONDITIONAL)) {
+					body.push(this.parseConditional())
 				} else {
 					const expr = this.expressionParser.parseExpression()
 					this.consume(TokenType.DOUBLE_BRACE_CLOSE, "Expect '}}' after expression.")
