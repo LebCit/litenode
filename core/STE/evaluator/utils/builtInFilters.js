@@ -278,6 +278,16 @@ export const builtInFilters = {
 		return shortValue + suffixes[suffixNum]
 	},
 
+	preserveSpaces: (value) => {
+		// Handle null/undefined gracefully
+		if (value == null) return ""
+
+		// Convert to string and handle non-string inputs gracefully
+		const str = String(value)
+
+		return str.replace(/\s/g, "&nbsp;") // Replace all spaces with &nbsp;
+	},
+
 	range: (value, lower, upper, inclusive = false) => {
 		// Convert the input value to a number
 		const number = Number(value)
