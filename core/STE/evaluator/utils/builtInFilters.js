@@ -223,12 +223,26 @@ export const builtInFilters = {
 		return number
 	},
 
-	join: (array, separator = ", ", finalSeparator = " and ") => {
+	join: (array, separator = ", ", finalSeparator = null) => {
 		if (!Array.isArray(array)) {
 			throw new Error("join filter expects an array")
 		}
-		if (array.length <= 1) return array.join("")
-		if (array.length === 2) return array.join(finalSeparator)
+
+		// Handle empty array and single item cases
+		if (array.length <= 1) {
+			return array.join("")
+		}
+
+		// If no finalSeparator is provided, use the regular separator throughout
+		if (finalSeparator === null) {
+			return array.join(separator)
+		}
+
+		// If finalSeparator is provided, use it for the last item
+		if (array.length === 2) {
+			return array.join(finalSeparator)
+		}
+
 		return array.slice(0, -1).join(separator) + finalSeparator + array.slice(-1)
 	},
 
