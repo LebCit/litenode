@@ -96,17 +96,12 @@ export const builtInFilters = {
 		if (typeof value !== "string") {
 			throw new Error(`escape filter expects a string, but got ${typeof value}`)
 		}
-		return String(value).replace(
-			/[&<>"']/g,
-			(match) =>
-				({
-					"&": "&amp;",
-					"<": "&lt;",
-					">": "&gt;",
-					'"': "&quot;",
-					"'": "&#39;",
-				}[match])
-		)
+		return String(value)
+			.replace(/&/g, "&amp;amp;") // Double-escape & first
+			.replace(/</g, "&amp;lt;") // Then escape < with &amp;lt;
+			.replace(/>/g, "&amp;gt;") // Then escape > with &amp;gt;
+			.replace(/"/g, "&amp;quot;") // Then escape " with &amp;quot;
+			.replace(/'/g, "&amp;#39;") // Then escape ' with &amp;#39;
 	},
 
 	fileSize: (bytes) => {
