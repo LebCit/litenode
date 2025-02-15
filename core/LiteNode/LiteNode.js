@@ -34,6 +34,7 @@ export class LiteNode {
 	#markdownHandler
 
 	constructor(directory = "static") {
+		// Initialize the root node for routing
 		this.#rootNode = new RouteNode()
 
 		// Bind addRoute method to LiteNode instance
@@ -41,20 +42,26 @@ export class LiteNode {
 			return addRoute(this.#rootNode, httpMethod, routePath, ...handlers)
 		}
 
-		this.#notFoundHandler = null
-		this.#errorHandler = null
-		this.#middlewareStack = []
+		this.#notFoundHandler = null // Handler for 404 errors
+		this.#errorHandler = null // Handler for general errors
+		this.#middlewareStack = [] // Stack of middleware functions
 
 		// Bind handleRequest method to LiteNode instance
 		this.#handleRequest = (nativeReq, nativeRes) => {
-			return handleRequest(
-				this.#middlewareStack,
-				this.#rootNode,
-				this.#notFoundHandler,
-				this.#errorHandler,
-				nativeReq,
-				nativeRes
-			)
+			try {
+				return handleRequest(
+					this.#middlewareStack,
+					this.#rootNode,
+					this.#notFoundHandler,
+					this.#errorHandler,
+					nativeReq,
+					nativeRes
+				)
+			} catch (error) {
+				console.error(`Error handling request: ${error.message}`)
+				nativeRes.statusCode = 500
+				nativeRes.end("Internal Server Error")
+			}
 		}
 
 		this.#directory = directory
@@ -66,23 +73,28 @@ export class LiteNode {
 	}
 
 	printTree() {
+		// Print the route tree for debugging purposes
 		printNode(this.#rootNode, "Root")
 	}
 
 	notFound(handler) {
+		// Set custom handler for 404 Not Found errors
 		this.#notFoundHandler = handler
 	}
 
 	onError(handler) {
+		// Set custom handler for general errors
 		this.#errorHandler = handler
 	}
 
 	get(routePath, ...handlers) {
+		// Define GET route
 		this.#addRoute("GET", routePath, ...handlers)
 		return this
 	}
 
 	post(routePath, ...handlers) {
+		// Define POST route with optional max request size
 		const customMaxRequestSize = typeof handlers[handlers.length - 1] === "number" ? handlers.pop() : null
 		const allHandlers = handlers.slice(0, -1).concat(bodyParser(handlers, customMaxRequestSize))
 		this.#addRoute("POST", routePath, ...allHandlers)
@@ -90,25 +102,30 @@ export class LiteNode {
 	}
 
 	put(routePath, ...handlers) {
+		// Define PUT route
 		this.#addRoute("PUT", routePath, ...handlers)
 		return this
 	}
 
 	delete(routePath, ...handlers) {
+		// Define DELETE route
 		this.#addRoute("DELETE", routePath, ...handlers)
 		return this
 	}
 
 	patch(routePath, ...handlers) {
+		// Define PATCH route
 		this.#addRoute("PATCH", routePath, ...handlers)
 		return this
 	}
 
 	merge(routerToMerge, ...middlewares) {
+		// Merge another router into this one
 		mergeNodes(this.#rootNode, routerToMerge.#rootNode, middlewares)
 	}
 
 	#generateNestedRoutes(node, prefix, newRouter) {
+		// Recursively generate nested routes
 		for (const [method, handlers] of Object.entries(node.handler)) {
 			newRouter.#addRoute(method, prefix, ...handlers)
 		}
@@ -129,17 +146,20 @@ export class LiteNode {
 	}
 
 	nest(prefix, routerToNest, ...middlewares) {
+		// Nest another router under a specific prefix
 		this.#nestNodes(this.#rootNode, routerToNest.#rootNode, prefix, middlewares)
 		return this
 	}
 
 	use(middleware) {
+		// Add middleware to the stack
 		this.#middlewareStack.push(middleware)
 		return this
 	}
 
 	async renderToFile(template, data, outputPath) {
 		try {
+			// Render a template to a file
 			const templateEngine = new STE("views")
 			const html = await templateEngine.render(template, data)
 			await writeFile(outputPath, html, "utf-8")
@@ -174,12 +194,14 @@ export class LiteNode {
 
 	async startServer(port = 5000) {
 		try {
+			// Check for updates before starting the server
 			await checkForUpdate()
 		} catch (err) {
 			console.error("Error checking for updates:", err)
 		}
 
 		if (this.#staticAssetLoader) {
+			// Serve static assets if the static asset loader is initialized
 			this.#staticAssetLoader.serveStaticAssets(this)
 		}
 
