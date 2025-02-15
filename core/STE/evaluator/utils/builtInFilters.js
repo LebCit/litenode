@@ -76,7 +76,18 @@ export const builtInFilters = {
 	},
 
 	defaults: (value, ...fallbacks) => {
-		return value || fallbacks.find((f) => f !== undefined && f !== null) || ""
+		// Helper to check if a value is truthy
+		// (eliminates all falsy values: false, 0, "", null, undefined, NaN)
+		const isTruthy = (val) => Boolean(val)
+
+		// If value is truthy, return it
+		if (isTruthy(value)) {
+			return value
+		}
+
+		// Look for first truthy fallback
+		const validFallback = fallbacks.find(isTruthy)
+		return validFallback !== undefined ? validFallback : ""
 	},
 
 	dump: (value) => `<pre>${JSON.stringify(value, null, 2)}</pre>`,
