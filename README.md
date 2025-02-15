@@ -3,7 +3,6 @@
 LiteNode is a lightweight and modular Node.js web framework designed to provide essential web server functionalities with a clean and intuitive API. It leverages modern JavaScript features, making it versatile for various development environments. LiteNode is suitable for developers seeking a straightforward yet powerful solution for building web applications.
 
 <p align="center">
-    <s>Please check weekly or at most every two weeks for new updates and features.</s><br>
     LiteNode checks for and notifies you if a new version is available whenever the server starts.<br>
     <a href="https://litenode.pages.dev/">Documentation</a>
 </p>
@@ -12,7 +11,7 @@ LiteNode is a lightweight and modular Node.js web framework designed to provide 
     <a href="https://lebcit.github.io/posts/ultimate-markdown-based-application-tutorial-in-node-js/">Dive into My Ultimate Markdown-based Application Tutorial in Node.js!</a>
 </p>
 
-**BREAKING CHANGE:** As of version 3.0.0, LiteNode no longer supports being loaded using `require`. This change aims to maintain and enhance LiteNode in a modular way, which would be difficult to achieve if backward compatibility with CommonJS were maintained.
+**BREAKING CHANGE:** As of LiteNode version 4.0.0, the integrated Simple Template Engine (STE) has been upgraded to a more powerful [AST-based](https://en.wikipedia.org/wiki/Abstract_syntax_tree) template engine. With this update, the engine's tags have been unified to a single signature, making it simpler and more efficient. There are also many new features to explore, so check out the [updated documentation](https://litenode.pages.dev/docs/rendering-templates/) to fully take advantage of these improvements.
 
 ## Installation
 
@@ -49,7 +48,7 @@ app.startServer()
 -   **Integrated Body Parser**: Simplify handling of POST requests with [LiteNode's integrated body parser](https://litenode.pages.dev/docs/body-parsing/), supporting `application/json`, `application/x-www-form-urlencoded`, and `multipart/form-data` content types.
 -   **Static Asset Loader**: Serve static files effortlessly with [LiteNode's built-in static asset loader](https://litenode.pages.dev/docs/serving-static-files/), without server restart.
 -   **Error Handling**: Customize [error handling](https://litenode.pages.dev/docs/error-handling/) with ease, ensuring robustness and reliability in your application.
--   **Templating**: LiteNode includes an [integrated template engine](https://litenode.pages.dev/docs/rendering-templates/) for rendering HTML files with [conditional logic, looping through arrays, and negating conditions](https://litenode.pages.dev/docs/ste-helpers/).
+-   **Templating**: LiteNode features an integrated, powerful [AST-based](https://en.wikipedia.org/wiki/Abstract_syntax_tree) template engine, called [STE](https://litenode.pages.dev/docs/rendering-templates/) (Simple Template Engine), for rendering HTML files.
 -   **Markdown**: With [LiteNode's support for Markdown](https://litenode.pages.dev/docs/markdown/), you can easily create content-driven applications with rich text formatting.
 
 ## Strengths
