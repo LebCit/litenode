@@ -3,8 +3,12 @@ import { join, relative } from "node:path"
 import { SMP } from "../../SMP/smp.js"
 
 export class MarkdownHandler {
-	constructor() {
-		this.smp = new SMP() // Initialize the custom markdown parser
+	#viewsDir
+
+	constructor(viewsDir = "views") {
+		this.#viewsDir = viewsDir
+		// Initialize the custom markdown parser and pass viewsDir to SMP
+		this.smp = new SMP(viewsDir)
 	}
 
 	/**
@@ -23,10 +27,12 @@ export class MarkdownHandler {
 	 */
 	async parseMarkdownFileS(dir) {
 		const normalizedDir = dir.startsWith("/") ? dir.slice(1) : dir
-		const files = await this.getMarkdownFiles(join("views", normalizedDir))
+		// Use the custom views directory instead of hardcoded "views"
+		const files = await this.getMarkdownFiles(join(this.#viewsDir, normalizedDir))
 		return Promise.all(
 			files.map((file) => {
-				const relativePath = relative("views", file)
+				// Use the custom views directory instead of hardcoded "views"
+				const relativePath = relative(this.#viewsDir, file)
 				return this.parseMarkdownFile(relativePath)
 			})
 		)

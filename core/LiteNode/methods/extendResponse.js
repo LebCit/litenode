@@ -2,7 +2,7 @@ import { STE } from "../../STE/ste.js"
 import { getContentType } from "../../utils/getContentType.js"
 import { readFileSync } from "node:fs"
 
-export function extendResponse(nativeRes) {
+export function extendResponse(nativeRes, viewsDir) {
 	nativeRes.redirect = (location, statusCode = 302) => {
 		nativeRes.writeHead(statusCode, { Location: location })
 		nativeRes.end()
@@ -32,7 +32,7 @@ export function extendResponse(nativeRes) {
 
 	nativeRes.render = async (template, data) => {
 		try {
-			const templateEngine = new STE("views")
+			const templateEngine = new STE(viewsDir)
 			const html = await templateEngine.render(template, data)
 			nativeRes.setHeader("Content-Type", "text/html")
 			nativeRes.end(html)

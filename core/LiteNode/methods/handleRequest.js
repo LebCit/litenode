@@ -2,9 +2,17 @@ import { extendResponse } from "./extendResponse.js"
 import { applyMiddleware } from "./applyMiddleware.js"
 import { findRouteHandler } from "./findRouteHandler.js"
 
-export async function handleRequest(middlewareStack, routeNode, notFoundHandler, errorHandler, nativeReq, nativeRes) {
+export async function handleRequest(
+	middlewareStack,
+	routeNode,
+	notFoundHandler,
+	errorHandler,
+	nativeReq,
+	nativeRes,
+	viewsDir
+) {
 	try {
-		extendResponse(nativeRes)
+		extendResponse(nativeRes, viewsDir)
 
 		await applyMiddleware(middlewareStack, nativeReq, nativeRes)
 

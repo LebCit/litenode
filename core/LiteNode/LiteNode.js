@@ -29,11 +29,16 @@ export class LiteNode {
 	#errorHandler
 	#middlewareStack
 	#handleRequest
-	#directory
+	#staticDir
+	#viewsDir
 	#staticAssetLoader
 	#markdownHandler
 
-	constructor(directory = "static") {
+	constructor(staticDir = "static", viewsDir = "views") {
+		// If staticDir is provided but viewsDir isn't, use default views
+		this.#staticDir = staticDir
+		this.#viewsDir = viewsDir
+
 		// Initialize the root node for routing
 		this.#rootNode = new RouteNode()
 
@@ -55,7 +60,8 @@ export class LiteNode {
 					this.#notFoundHandler,
 					this.#errorHandler,
 					nativeReq,
-					nativeRes
+					nativeRes,
+					this.#viewsDir
 				)
 			} catch (error) {
 				console.error(`Error handling request: ${error.message}`)
@@ -64,12 +70,13 @@ export class LiteNode {
 			}
 		}
 
-		this.#directory = directory
-		if (directory !== "__NO_STATIC_DIR__") {
-			this.#staticAssetLoader = new StaticAssetLoader(directory)
+		this.#staticDir = staticDir
+		if (staticDir !== "__NO_STATIC_DIR__") {
+			this.#staticAssetLoader = new StaticAssetLoader(staticDir)
 		}
 
-		this.#markdownHandler = new MarkdownHandler() // Initialize the MarkdownHandler
+		// Initialize MarkdownHandler with the views directory
+		this.#markdownHandler = new MarkdownHandler(this.#viewsDir)
 	}
 
 	printTree() {
@@ -160,7 +167,7 @@ export class LiteNode {
 	async renderToFile(template, data, outputPath) {
 		try {
 			// Render a template to a file
-			const templateEngine = new STE("views")
+			const templateEngine = new STE(this.#viewsDir)
 			const html = await templateEngine.render(template, data)
 			await writeFile(outputPath, html, "utf-8")
 		} catch (error) {

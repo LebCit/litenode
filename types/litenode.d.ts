@@ -96,7 +96,7 @@ declare module "litenode" {
 
 	// LiteNode class with method signatures
 	class LiteNode {
-		constructor(directory?: string)
+		constructor(staticDir?: string, viewsDir?: string)
 
 		/**
 		 * Prints the routing tree to the console.
