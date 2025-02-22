@@ -1,3 +1,47 @@
+// Common helper function for handling nested property access
+const getNestedValue = (obj, path) => {
+	// Handle empty or null path
+	if (!path) return obj
+
+	// Parse the path into segments handling both dot and bracket notation
+	const segments = []
+	let current = ""
+	let inBracket = false
+
+	for (let i = 0; i < path.length; i++) {
+		const char = path[i]
+
+		if (char === "[" && !inBracket) {
+			if (current) segments.push(current)
+			current = ""
+			inBracket = true
+		} else if (char === "]" && inBracket) {
+			// Handle both quoted and unquoted keys in brackets
+			const trimmed = current.trim()
+			segments.push(trimmed.startsWith('"') || trimmed.startsWith("'") ? trimmed.slice(1, -1) : trimmed)
+			current = ""
+			inBracket = false
+		} else if (char === "." && !inBracket) {
+			if (current) segments.push(current)
+			current = ""
+		} else {
+			current += char
+		}
+	}
+
+	if (current) segments.push(current)
+
+	// Navigate the object using the parsed segments
+	return segments.reduce((value, segment) => value?.[segment], obj)
+}
+
+// Common validation function for array input
+const validateArrayInput = (array, filterName) => {
+	if (!Array.isArray(array)) {
+		throw new Error(`${filterName} filter expects an array as input`)
+	}
+}
+
 //Store generators at module level
 const cycleGenerators = new Map()
 let cycleCounter = 0
@@ -119,11 +163,9 @@ export const builtInFilters = {
 	},
 
 	groupBy: (array, key) => {
-		if (!Array.isArray(array)) {
-			throw new Error("groupBy filter expects an array")
-		}
+		validateArrayInput(array, "groupBy")
 		return array.reduce((acc, item) => {
-			const groupKey = item[key]
+			const groupKey = getNestedValue(item, key)
 			if (!acc[groupKey]) acc[groupKey] = []
 			acc[groupKey].push(item)
 			return acc
@@ -224,9 +266,7 @@ export const builtInFilters = {
 	},
 
 	join: (array, separator = ", ", finalSeparator = null) => {
-		if (!Array.isArray(array)) {
-			throw new Error("join filter expects an array")
-		}
+		validateArrayInput(array, "join")
 
 		// Handle empty array and single item cases
 		if (array.length <= 1) {
@@ -381,11 +421,44 @@ export const builtInFilters = {
 			.replace(/-+$/, "")
 	},
 
-	sortBy: (array, key) => {
-		if (!Array.isArray(array)) {
-			throw new Error("sortBy filter expects an array")
-		}
-		return [...array].sort((a, b) => (a[key] > b[key] ? 1 : -1))
+	sortBy: (array, key, order = "asc") => {
+		validateArrayInput(array, "sortBy")
+
+		// If order is an array, create a custom sort order map
+		const orderMap = Array.isArray(order) ? Object.fromEntries(order.map((item, index) => [item, index])) : null
+
+		return [...array].sort((a, b) => {
+			const aVal = getNestedValue(a, key)
+			const bVal = getNestedValue(b, key)
+
+			// Handle custom sort order
+			if (orderMap !== null) {
+				const aIndex = orderMap[aVal] ?? Infinity
+				const bIndex = orderMap[bVal] ?? Infinity
+				return aIndex - bIndex
+			}
+
+			// Handle regular ascending/descending sort
+			if (order === "desc") {
+				return aVal > bVal ? -1 : aVal < bVal ? 1 : 0
+			}
+			return aVal > bVal ? 1 : aVal < bVal ? -1 : 0
+		})
+	},
+
+	sortByDate: (array, key, order = "asc") => {
+		validateArrayInput(array, "sortByDate")
+
+		return [...array].sort((a, b) => {
+			const aDate = new Date(getNestedValue(a, key))
+			const bDate = new Date(getNestedValue(b, key))
+
+			if (isNaN(aDate.getTime()) || isNaN(bDate.getTime())) {
+				throw new Error(`Invalid date found in key: ${key}`)
+			}
+
+			return order === "desc" ? bDate.getTime() - aDate.getTime() : aDate.getTime() - bDate.getTime()
+		})
 	},
 
 	timeAgo: (value) => {
@@ -491,10 +564,8 @@ export const builtInFilters = {
 	},
 
 	where: (array, key, value) => {
-		if (!Array.isArray(array)) {
-			throw new Error("where filter expects an array")
-		}
-		return array.filter((item) => item[key] === value)
+		validateArrayInput(array, "where")
+		return array.filter((item) => getNestedValue(item, key) === value)
 	},
 
 	wordCount: (value) => {
