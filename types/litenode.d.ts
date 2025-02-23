@@ -412,6 +412,34 @@ declare module "litenode" {
 		generateTOC(input: string): string
 
 		/**
+		 * Loads environment variables from a .env file into process.env
+		 * @param {string} path - Path to the .env file (default: ".env")
+		 * @param {Object} options - Configuration options
+		 * @param {boolean} options.override - Whether to override existing environment variables (default: false)
+		 * @param {boolean} options.silent - Whether to silence errors if the file doesn't exist (default: false)
+		 * @returns {Object} Object containing the loaded environment variables
+		 * @example
+		 * app.loadEnv(); // Load from .env
+		 * app.loadEnv('.env.local', { override: true }); // Load from custom path with options
+		 *
+		 * @see {@link https://litenode.pages.dev/docs/env-variables/#loadenv|LoadEnv Documentation}
+		 */
+		loadEnv(path?: string, options?: { override?: boolean; silent?: boolean }): { [key: string]: string }
+
+		/**
+		 * Gets an environment variable with type conversion
+		 * @param {string} key - The environment variable key
+		 * @param {any} defaultValue - Default value if the environment variable is not set
+		 * @returns {any} The environment variable value with appropriate type conversion
+		 * @example
+		 * const port = app.getEnv('PORT', 3000); // Will be a number
+		 * const debug = app.getEnv('DEBUG', false); // Will be a boolean
+		 *
+		 * @see {@link https://litenode.pages.dev/docs/env-variables/#getenv|GetEnv Documentation}
+		 */
+		getEnv(key: string, defaultValue?: any): any
+
+		/**
 		 * Starts the LiteNode server on the specified port.
 		 *
 		 * @param port - The port number on which to start the server. Defaults to 5000 if not specified.

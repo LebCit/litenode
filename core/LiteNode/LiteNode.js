@@ -20,6 +20,7 @@ import { MarkdownHandler } from "./methods/markdownHandler.js"
 import { generateTOC } from "../utils/generateTOC.js"
 import { bodyParser } from "../utils/bodyParser.js"
 import { checkForUpdate } from "../utils/updateChecker.js"
+import { loadEnv, getEnv } from "../utils/envLoader.js"
 
 export class LiteNode {
 	#rootNode
@@ -199,6 +200,14 @@ export class LiteNode {
 		return generateTOC(input)
 	}
 
+	loadEnv(path = ".env", options = {}) {
+		return loadEnv(path, options)
+	}
+
+	getEnv(key, defaultValue = undefined) {
+		return getEnv(key, defaultValue)
+	}
+
 	async startServer(port = 5000) {
 		try {
 			// Check for updates before starting the server
@@ -212,10 +221,13 @@ export class LiteNode {
 			this.#staticAssetLoader.serveStaticAssets(this)
 		}
 
+		// Read environment PORT variable if available
+		const envPort = getEnv("PORT", port)
+
 		http.createServer((req, res) => {
 			this.#handleRequest(req, res)
-		}).listen(port, () => {
-			console.log(`App @ http://localhost:${port}`)
+		}).listen(envPort, () => {
+			console.log(`App @ http://localhost:${envPort}`)
 		})
 	}
 }
