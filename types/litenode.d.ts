@@ -238,17 +238,68 @@ declare module "litenode" {
          */
         patch(routePath: string, ...handlers: (RouteHandler | number)[]): this
 
-		/**
-		 * Merges another LiteNode router into this one.
-		 *
-		 * @param routerToMerge - The LiteNode router to merge.
-		 * @param middlewares - Middleware functions to apply.
-		 * @example
-		 * app.merge(otherRouter, middleware1, middleware2);
-		 *
-		 * @see {@link https://litenode.pages.dev/docs/merge-and-nest/#merge|Merge Documentation}
-		 */
-		merge(routerToMerge: LiteNode, ...middlewares: RouteHandler[]): void
+        /**
+         * Registers a route handler for ALL HTTP methods (GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS).
+         *
+         * @param routePath - The path for the route.
+         * @param handlers - The handler functions for the route.
+         * @example
+         * app.any("/health", (req, res) => {
+         *   res.json({ status: "healthy", method: req.method });
+         * });
+         *
+         * @returns The LiteNode instance for method chaining.
+         * @see {@link https://litenode.pages.dev/docs/routing/#any|Any Documentation}
+         */
+        any(routePath: string, ...handlers: RouteHandler[]): this
+
+        /**
+         * Registers a route handler for a path with a wildcard that matches a single path segment.
+         * This is equivalent to `get(path + "/*", ...)` but provides a more descriptive API.
+         * The matched value is available as `req.params["*"]`.
+         *
+         * @param routePath - The base path for the route (wildcard will be appended).
+         * @param handlers - The handler functions for the route.
+         * @example
+         * app.wildcard("/files", (req, res) => {
+         *   const filename = req.params["*"];
+         *   res.json({ message: `Viewing file: ${filename}` });
+         * });
+         *
+         * @returns The LiteNode instance for method chaining.
+         * @see {@link https://litenode.pages.dev/docs/routing/#wildcard|Wildcard Documentation}
+         */
+        wildcard(routePath: string, ...handlers: RouteHandler[]): this
+
+        /**
+         * Registers a route handler for a path with a catch-all wildcard that matches multiple path segments.
+         * This is equivalent to `get(path + "/**", ...)` but provides a more descriptive API.
+         * The matched value is available as `req.params["**"]`.
+         *
+         * @param routePath - The base path for the route (catch-all wildcard will be appended).
+         * @param handlers - The handler functions for the route.
+         * @example
+         * app.catchAll("/api", (req, res) => {
+         *   const path = req.params["**"];
+         *   res.json({ message: `Matched API path: ${path}` });
+         * });
+         *
+         * @returns The LiteNode instance for method chaining.
+         * @see {@link https://litenode.pages.dev/docs/routing/#catchall|CatchAll Documentation}
+         */
+        catchAll(routePath: string, ...handlers: RouteHandler[]): this
+
+        /**
+         * Merges another LiteNode router into this one.
+         *
+         * @param routerToMerge - The LiteNode router to merge.
+         * @param middlewares - Middleware functions to apply.
+         * @example
+         * app.merge(otherRouter, middleware1, middleware2);
+         *
+         * @see {@link https://litenode.pages.dev/docs/merge-and-nest/#merge|Merge Documentation}
+         */
+        merge(routerToMerge: LiteNode, ...middlewares: RouteHandler[]): void
 
 		/**
 		 * Nests another LiteNode router under a specified prefix.

@@ -129,10 +129,34 @@ export class LiteNode {
         return this.#addMethodWithBodyParsing("PATCH", routePath, handlers)
     }
 
-	merge(routerToMerge, ...middlewares) {
-		// Merge another router into this one
-		mergeNodes(this.#rootNode, routerToMerge.#rootNode, middlewares)
-	}
+    // Method to support wildcard routes
+    any(routePath, ...handlers) {
+        // Define route for ALL HTTP methods
+        const methods = ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]
+        methods.forEach((method) => {
+            this.#addRoute(method, routePath, ...handlers)
+        })
+        return this
+    }
+
+    // Helper method for wildcard routes
+    wildcard(routePath, ...handlers) {
+        // Ensure path ends with a wildcard and has a slash
+        const basePath = routePath.endsWith("/") ? routePath.slice(0, -1) : routePath
+        return this.get(`${basePath}/*`, ...handlers)
+    }
+
+    // Helper method for catch-all routes
+    catchAll(routePath, ...handlers) {
+        // Ensure path ends with a double-wildcard and has a slash
+        const basePath = routePath.endsWith("/") ? routePath.slice(0, -1) : routePath
+        return this.get(`${basePath}/**`, ...handlers)
+    }
+
+    merge(routerToMerge, ...middlewares) {
+        // Merge another router into this one
+        mergeNodes(this.#rootNode, routerToMerge.#rootNode, middlewares)
+    }
 
 	#generateNestedRoutes(node, prefix, newRouter) {
 		// Recursively generate nested routes
