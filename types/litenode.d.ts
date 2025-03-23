@@ -168,50 +168,75 @@ declare module "litenode" {
 		 */
 		post(routePath: string, ...handlers: (RouteHandler | number)[]): this
 
-		/**
-		 * Registers a PUT route handler.
-		 *
-		 * @param routePath - The path for the route.
-		 * @param handlers - The handler functions for the route.
-		 * @example
-		 * app.put("/users/:id", async (req, res) => {
-		 *   const userId = req.params.id;
-		 *   res.txt(`User with ID ${userId} updated successfully`);
-		 * });
-		 *
-		 * @see {@link https://litenode.pages.dev/docs/routing/#put|Put Documentation}
-		 */
-		put(routePath: string, ...handlers: RouteHandler[]): this
+        /**
+         * Registers a PUT route handler with automatic body parsing.
+         *
+         * @param routePath - The path for the route.
+         * @param handlers - The handler functions for the route.
+         * @param customMaxRequestSize - (Optional) Maximum request size in MB. If not provided, defaults to 1MB.
+         * @example
+         * app.put("/users/:id", async (req, res) => {
+         *   const userId = req.params.id;
+         *   const userData = req.body;
+         *   res.txt(`User with ID ${userId} updated successfully`);
+         * });
+         *
+         * @example
+         * app.put("/users/:id", async (req, res) => {
+         *   const userData = req.body;
+         *   res.status(200).json({ success: true });
+         * }, 5); // customMaxRequestSize of 5 MB
+         *
+         * @see {@link https://litenode.pages.dev/docs/routing/#put|Put Documentation}
+         */
+        put(routePath: string, ...handlers: (RouteHandler | number)[]): this
 
-		/**
-		 * Registers a DELETE route handler.
-		 *
-		 * @param routePath - The path for the route.
-		 * @param handlers - The handler functions for the route.
-		 * @example
-		 * app.delete("/users/:id", async (req, res) => {
-		 *   const userId = req.params.id;
-		 *   res.end(`User with ID ${userId} deleted successfully`);
-		 * });
-		 *
-		 * @see {@link https://litenode.pages.dev/docs/routing/#delete|Delete Documentation}
-		 */
-		delete(routePath: string, ...handlers: RouteHandler[]): this
+        /**
+         * Registers a DELETE route handler with automatic body parsing.
+         *
+         * @param routePath - The path for the route.
+         * @param handlers - The handler functions for the route.
+         * @param customMaxRequestSize - (Optional) Maximum request size in MB. If not provided, defaults to 1MB.
+         * @example
+         * app.delete("/users/:id", async (req, res) => {
+         *   const userId = req.params.id;
+         *   const options = req.body; // Access deletion options if provided
+         *   res.end(`User with ID ${userId} deleted successfully`);
+         * });
+         *
+         * @example
+         * // Bulk delete with IDs in request body
+         * app.delete("/users", async (req, res) => {
+         *   const userIds = req.body.ids;
+         *   res.json({ deleted: userIds.length });
+         * }, 2); // customMaxRequestSize of 2 MB
+         *
+         * @see {@link https://litenode.pages.dev/docs/routing/#delete|Delete Documentation}
+         */
+        delete(routePath: string, ...handlers: (RouteHandler | number)[]): this
 
-		/**
-		 * Registers a PATCH route handler.
-		 *
-		 * @param routePath - The path for the route.
-		 * @param handlers - The handler functions for the route.
-		 * @example
-		 * app.patch("/users/:id", async (req, res) => {
-		 *   const userId = req.params.id;
-		 *   res.txt(`User with ID ${userId} patched successfully`);
-		 * });
-		 *
-		 * @see {@link https://litenode.pages.dev/docs/routing/#patch|Patch Documentation}
-		 */
-		patch(routePath: string, ...handlers: RouteHandler[]): this
+        /**
+         * Registers a PATCH route handler with automatic body parsing.
+         *
+         * @param routePath - The path for the route.
+         * @param handlers - The handler functions for the route.
+         * @param customMaxRequestSize - (Optional) Maximum request size in MB. If not provided, defaults to 1MB.
+         * @example
+         * app.patch("/users/:id", async (req, res) => {
+         *   const userId = req.params.id;
+         *   const updates = req.body; // Partial updates for the resource
+         *   res.txt(`User with ID ${userId} patched successfully`);
+         * });
+         *
+         * @example
+         * app.patch("/documents/:id", async (req, res) => {
+         *   const docUpdates = req.body;
+         *   res.status(200).json({ success: true });
+         * }, 10); // customMaxRequestSize of 10 MB for larger documents
+         *
+         * @see {@link https://litenode.pages.dev/docs/routing/#patch|Patch Documentation}
+         */
+        patch(routePath: string, ...handlers: (RouteHandler | number)[]): this
 
 		/**
 		 * Merges another LiteNode router into this one.

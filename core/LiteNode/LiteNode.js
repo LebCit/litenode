@@ -101,31 +101,33 @@ export class LiteNode {
 		return this
 	}
 
-	post(routePath, ...handlers) {
-		// Define POST route with optional max request size
-		const customMaxRequestSize = typeof handlers[handlers.length - 1] === "number" ? handlers.pop() : null
-		const allHandlers = handlers.slice(0, -1).concat(bodyParser(handlers, customMaxRequestSize))
-		this.#addRoute("POST", routePath, ...allHandlers)
-		return this
-	}
+    // Private helper method for adding routes with body parsing
+    #addMethodWithBodyParsing(method, routePath, handlers) {
+        const customMaxRequestSize = typeof handlers[handlers.length - 1] === "number" ? handlers.pop() : null
+        const allHandlers = handlers.slice(0, -1).concat(bodyParser(handlers, customMaxRequestSize))
+        this.#addRoute(method, routePath, ...allHandlers)
+        return this
+    }
 
-	put(routePath, ...handlers) {
-		// Define PUT route
-		this.#addRoute("PUT", routePath, ...handlers)
-		return this
-	}
+    post(routePath, ...handlers) {
+        // Define POST route with optional max request size
+        return this.#addMethodWithBodyParsing("POST", routePath, handlers)
+    }
 
-	delete(routePath, ...handlers) {
-		// Define DELETE route
-		this.#addRoute("DELETE", routePath, ...handlers)
-		return this
-	}
+    put(routePath, ...handlers) {
+        // Define PUT route with optional max request size
+        return this.#addMethodWithBodyParsing("PUT", routePath, handlers)
+    }
 
-	patch(routePath, ...handlers) {
-		// Define PATCH route
-		this.#addRoute("PATCH", routePath, ...handlers)
-		return this
-	}
+    delete(routePath, ...handlers) {
+        // Define DELETE route with optional max request size
+        return this.#addMethodWithBodyParsing("DELETE", routePath, handlers)
+    }
+
+    patch(routePath, ...handlers) {
+        // Define PATCH route with optional max request size
+        return this.#addMethodWithBodyParsing("PATCH", routePath, handlers)
+    }
 
 	merge(routerToMerge, ...middlewares) {
 		// Merge another router into this one
