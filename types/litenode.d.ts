@@ -590,7 +590,7 @@ declare module "litenode" {
          *   const sessionId = req.cookies.sessionId;
          *   // Use the cookie value...
          * });
-         * @see {@link https://litenode.pages.dev/docs/cookies|Cookies Documentation}
+         * @see {@link https://litenode.pages.dev/docs/cookies/#enablecookieparser|EnableCookieParser Documentation}
          */
         enableCookieParser(): this
 
