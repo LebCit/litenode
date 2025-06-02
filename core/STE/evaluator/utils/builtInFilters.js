@@ -76,6 +76,15 @@ const next = (value) => {
     return generator.next()
 }
 
+function getTimezoneOffsetString(date) {
+    const offset = -date.getTimezoneOffset()
+    const sign = offset >= 0 ? "+" : "-"
+    const absOffset = Math.abs(offset)
+    const hours = String(Math.floor(absOffset / 60)).padStart(2, "0")
+    const minutes = String(absOffset % 60).padStart(2, "0")
+    return `${sign}${hours}:${minutes}`
+}
+
 export const builtInFilters = {
     cycle,
     next,
@@ -103,54 +112,102 @@ export const builtInFilters = {
         return `${number.toFixed(2)} ${symbol}`
     },
 
-    dateFormat: (value, format = "YYYY-MM-DD", useUTC = true) => {
-        // Safely handle null or undefined values
-        if (value === null || value === undefined) {
-            return ""
-        }
+    dateFormat: (value, format = "YYYY-MM-DD", useUTC = true, locale = {}) => {
+        if (value === null || value === undefined) return ""
 
-        // Create a date object from the input value
         const date = new Date(value)
+        if (isNaN(date.getTime())) return `Invalid date: ${value}`
 
-        // Check if the date is valid
-        if (isNaN(date.getTime())) {
-            return `Invalid date: ${value}`
-        }
-
-        // Define getter functions based on useUTC parameter
+        // Getters
         const getYear = useUTC ? () => date.getUTCFullYear() : () => date.getFullYear()
         const getMonth = useUTC ? () => date.getUTCMonth() : () => date.getMonth()
         const getDay = useUTC ? () => date.getUTCDate() : () => date.getDate()
         const getHours = useUTC ? () => date.getUTCHours() : () => date.getHours()
         const getMinutes = useUTC ? () => date.getUTCMinutes() : () => date.getMinutes()
         const getSeconds = useUTC ? () => date.getUTCSeconds() : () => date.getSeconds()
+        const getDayOfWeek = useUTC ? () => date.getUTCDay() : () => date.getDay()
 
-        // Get all values at once
         const year = getYear()
-        const month = getMonth() + 1 // Months are 0-based in JavaScript
+        const month = getMonth() + 1
         const day = getDay()
         const hours = getHours()
         const minutes = getMinutes()
         const seconds = getSeconds()
+        const dayOfWeek = getDayOfWeek()
+        const ampm = hours >= 12 ? "PM" : "AM"
+        const timezoneOffset = useUTC ? "+00:00" : getTimezoneOffsetString(date)
 
-        // Create a dictionary of replacements
-        const replacements = {
-            YYYY: String(year),
-            YY: String(year).slice(-2),
-            MM: String(month).padStart(2, "0"),
-            M: String(month),
-            DD: String(day).padStart(2, "0"),
-            D: String(day),
-            HH: String(hours).padStart(2, "0"),
-            H: String(hours),
-            mm: String(minutes).padStart(2, "0"),
-            m: String(minutes),
-            ss: String(seconds).padStart(2, "0"),
-            s: String(seconds),
+        // Fallback to default English if no locale is provided
+        const defaultLocale = {
+            monthNames: [
+                "January",
+                "February",
+                "March",
+                "April",
+                "May",
+                "June",
+                "July",
+                "August",
+                "September",
+                "October",
+                "November",
+                "December",
+            ],
+            monthNamesShort: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+            weekdayNames: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+            weekdayNamesShort: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
         }
 
-        // Replace tokens in the format string
-        return format.replace(/YYYY|YY|MM|M|DD|D|HH|H|mm|m|ss|s/g, (match) => replacements[match])
+        const loc = {
+            ...defaultLocale,
+            ...locale,
+        }
+
+        // Replacements map
+        const replacements = {
+            YYYY: String(year),
+            yyyy: String(year),
+            YY: String(year).slice(-2),
+            yy: String(year).slice(-2),
+
+            MMMM: loc.monthNames[getMonth()],
+            MMM: loc.monthNamesShort[getMonth()],
+            mmmm: loc.monthNames[getMonth()],
+            mmm: loc.monthNamesShort[getMonth()],
+
+            MM: String(month).padStart(2, "0"),
+            M: String(month),
+
+            DD: String(day).padStart(2, "0"),
+            D: String(day),
+            dd: String(day).padStart(2, "0"),
+            d: String(day),
+
+            dddd: loc.weekdayNames[dayOfWeek],
+            ddd: loc.weekdayNamesShort[dayOfWeek],
+
+            HH: String(hours).padStart(2, "0"),
+            H: String(hours),
+            hh: String(hours).padStart(2, "0"),
+            h: String(hours),
+
+            mm: String(minutes).padStart(2, "0"),
+            m: String(minutes),
+
+            ss: String(seconds).padStart(2, "0"),
+            s: String(seconds),
+
+            A: ampm,
+            a: ampm.toLowerCase(),
+
+            Z: timezoneOffset,
+        }
+
+        // Use regex to match all supported tokens
+        return format.replace(
+            /YYYY|yyyy|YY|yy|MMMM|mmmm|mmm|MM|M|DD|D|dd|d|dddd|ddd|HH|H|hh|h|mm|m|ss|s|A|a|Z/g,
+            (match) => replacements[match] ?? match
+        )
     },
 
     defaults: (value, ...fallbacks) => {
