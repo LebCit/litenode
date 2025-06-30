@@ -243,6 +243,8 @@ export class StatementParser extends BaseParser {
                     body.push({
                         type: "this_ref",
                     })
+                } else if (this.match(TokenType.TAG_SET)) {
+                    body.push(this.parseSet())
                 } else if (this.match(TokenType.TAG_EACH)) {
                     body.push(this.parseEach())
                 } else if (this.match(TokenType.TAG_CONDITIONAL)) {

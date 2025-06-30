@@ -2,324 +2,342 @@ import { TokenType } from "../syntax/TokenTypes.js"
 import { BaseParser } from "./BaseParser.js"
 
 export class ExpressionParser extends BaseParser {
-	constructor(state) {
-		super(state) // Shared state
-	}
+    constructor(state) {
+        super(state) // Shared state
+    }
 
-	parseExpression() {
-		return this.parseFilter() // Start with filter
-	}
+    parseExpression() {
+        return this.parseFilter() // Start with filter
+    }
 
-	// Check for filter first
-	parseFilter() {
-		// Get the complete expression first
-		let expr = this.ternary()
+    // Check for filter first
+    parseFilter() {
+        // Get the complete expression first
+        let expr = this.ternary()
 
-		// Keep checking for more filters while we see pipe tokens
-		while (this.match(TokenType.PIPE_FILTER)) {
-			// Get the filter name - change IDENTIFIER to explicit filter name consume
-			const filterName = this.consume(TokenType.IDENTIFIER, "Expect filter name after '|'").lexeme
+        // Keep checking for more filters while we see pipe tokens
+        while (this.match(TokenType.PIPE_FILTER)) {
+            // Get the filter name - change IDENTIFIER to explicit filter name consume
+            const filterName = this.consume(TokenType.IDENTIFIER, "Expect filter name after '|'").lexeme
 
-			// Check for filter arguments
-			let args = []
-			if (this.match(TokenType.LPAREN)) {
-				if (!this.check(TokenType.RPAREN)) {
-					do {
-						if (this.check(TokenType.STRING)) {
-							this.advance()
-							args.push({
-								type: "literal",
-								value: this.previous().literal,
-							})
-						} else {
-							args.push(this.parseExpression())
-						}
-					} while (this.match(TokenType.COMMA))
-				}
-				this.consume(TokenType.RPAREN, "Expect ')' after filter arguments")
-			}
+            // Check for filter arguments
+            let args = []
+            if (this.match(TokenType.LPAREN)) {
+                if (!this.check(TokenType.RPAREN)) {
+                    do {
+                        if (this.check(TokenType.STRING)) {
+                            this.advance()
+                            args.push({
+                                type: "literal",
+                                value: this.previous().literal,
+                            })
+                        } else {
+                            args.push(this.parseExpression())
+                        }
+                    } while (this.match(TokenType.COMMA))
+                }
+                this.consume(TokenType.RPAREN, "Expect ')' after filter arguments")
+            }
 
-			// Create filter node
-			expr = {
-				type: "filter",
-				expression: expr,
-				filter: filterName,
-				arguments: args,
-			}
-		}
+            // Create filter node
+            expr = {
+                type: "filter",
+                expression: expr,
+                filter: filterName,
+                arguments: args,
+            }
+        }
 
-		return expr
-	}
+        return expr
+    }
 
-	ternary() {
-		let expr = this.logical()
+    ternary() {
+        let expr = this.logical()
 
-		if (this.match(TokenType.QUESTION)) {
-			const trueExpr = this.parseExpression()
-			this.consume(TokenType.COLON, "Expect ':' after true branch in ternary operator.")
+        if (this.match(TokenType.QUESTION)) {
+            const trueExpr = this.parseExpression()
+            this.consume(TokenType.COLON, "Expect ':' after true branch in ternary operator.")
 
-			// Recursively parse the false expression as potentially another ternary
-			const falseExpr = this.ternary()
+            // Recursively parse the false expression as potentially another ternary
+            const falseExpr = this.ternary()
 
-			expr = {
-				type: "ternary",
-				condition: expr,
-				trueExpr,
-				falseExpr,
-			}
-		}
+            expr = {
+                type: "ternary",
+                condition: expr,
+                trueExpr,
+                falseExpr,
+            }
+        }
 
-		return expr
-	}
+        return expr
+    }
 
-	logical() {
-		let expr = this.comparison()
+    logical() {
+        let expr = this.comparison()
 
-		while (this.match(TokenType.AND, TokenType.OR)) {
-			const operator = this.previous().type
-			const right = this.comparison()
-			expr = {
-				type: "logical",
-				operator,
-				left: expr,
-				right,
-			}
-		}
+        while (this.match(TokenType.AND, TokenType.OR)) {
+            const operator = this.previous().type
+            const right = this.comparison()
+            expr = {
+                type: "logical",
+                operator,
+                left: expr,
+                right,
+            }
+        }
 
-		return expr
-	}
+        return expr
+    }
 
-	comparison() {
-		let expr = this.addition()
+    comparison() {
+        let expr = this.addition()
 
-		while (
-			this.match(
-				TokenType.GREATER,
-				TokenType.GREATER_EQUAL,
-				TokenType.LESS,
-				TokenType.LESS_EQUAL,
-				TokenType.EQUAL,
-				TokenType.NOT_EQUAL,
-				TokenType.STRICT_EQUAL,
-				TokenType.STRICT_NOT_EQUAL
-			)
-		) {
-			const operator = this.previous().type
-			const right = this.addition()
-			expr = {
-				type: "comparison",
-				operator,
-				left: expr,
-				right,
-			}
-		}
+        while (
+            this.match(
+                TokenType.GREATER,
+                TokenType.GREATER_EQUAL,
+                TokenType.LESS,
+                TokenType.LESS_EQUAL,
+                TokenType.EQUAL,
+                TokenType.NOT_EQUAL,
+                TokenType.STRICT_EQUAL,
+                TokenType.STRICT_NOT_EQUAL
+            )
+        ) {
+            const operator = this.previous().type
+            const right = this.addition()
+            expr = {
+                type: "comparison",
+                operator,
+                left: expr,
+                right,
+            }
+        }
 
-		return expr
-	}
+        return expr
+    }
 
-	addition() {
-		let expr = this.multiplication()
+    addition() {
+        let expr = this.multiplication()
 
-		while (this.match(TokenType.PLUS, TokenType.MINUS)) {
-			const operator = this.previous().type
-			const right = this.multiplication()
-			expr = {
-				type: "binary",
-				operator,
-				left: expr,
-				right,
-			}
-		}
+        while (this.match(TokenType.PLUS, TokenType.MINUS)) {
+            const operator = this.previous().type
+            const right = this.multiplication()
+            expr = {
+                type: "binary",
+                operator,
+                left: expr,
+                right,
+            }
+        }
 
-		return expr
-	}
+        return expr
+    }
 
-	multiplication() {
-		let expr = this.unary()
+    multiplication() {
+        let expr = this.unary()
 
-		while (this.match(TokenType.MULTIPLY, TokenType.DIVIDE, TokenType.MODULO, TokenType.POWER)) {
-			const operator = this.previous().type
-			const right = this.unary()
-			expr = {
-				type: "binary",
-				operator,
-				left: expr,
-				right,
-			}
-		}
+        while (this.match(TokenType.MULTIPLY, TokenType.DIVIDE, TokenType.MODULO, TokenType.POWER)) {
+            const operator = this.previous().type
+            const right = this.unary()
+            expr = {
+                type: "binary",
+                operator,
+                left: expr,
+                right,
+            }
+        }
 
-		return expr
-	}
+        return expr
+    }
 
-	unary() {
-		if (this.match(TokenType.MINUS, TokenType.NOT)) {
-			const operator = this.previous().type
-			const right = this.unary() // Recursive unary
-			return {
-				type: "unary",
-				operator,
-				right,
-			}
-		}
+    unary() {
+        if (this.match(TokenType.MINUS, TokenType.NOT)) {
+            const operator = this.previous().type
+            const right = this.unary() // Recursive unary
+            return {
+                type: "unary",
+                operator,
+                right,
+            }
+        }
 
-		return this.primary()
-	}
+        return this.primary()
+    }
 
-	primary() {
-		if (this.match(TokenType.STRING)) {
-			const previousToken = this.previous()
-			const value = previousToken.literal
-			const lexeme = previousToken.lexeme
-			const wasQuoted = lexeme.startsWith('"') || lexeme.startsWith("'")
+    primary() {
+        if (this.match(TokenType.STRING)) {
+            const previousToken = this.previous()
+            const value = previousToken.literal
+            const lexeme = previousToken.lexeme
+            const wasQuoted = lexeme.startsWith('"') || lexeme.startsWith("'")
 
-			// Handle quoted strings in specific contexts
-			if (wasQuoted) {
-				// Case 1: Quoted strings in set value context or object literal context
-				if (this.state.parsingSetValue || this.state.isInObjectLiteral) {
-					return { type: "literal", value }
-				}
+            // Handle quoted strings in specific contexts
+            if (wasQuoted) {
+                // Case 1: Quoted strings in set value context or object literal context
+                if (this.state.parsingSetValue || this.state.isInObjectLiteral) {
+                    return { type: "literal", value }
+                }
 
-				// Case 2: Quoted strings with dots, treated as variable names (outside include context)
-				// Quoted strings with dots are only treated as variables if they're not being used in a filter
-				if (!this.state.parsingInclude && value.includes(".") && !this.check(TokenType.PIPE_FILTER)) {
-					return { type: "variable", name: value }
-				}
-			}
+                // Case 2: Quoted strings with dots, treated as variable names (outside include context)
+                // Quoted strings with dots are only treated as variables if they're not being used in a filter
+                if (!this.state.parsingInclude && value.includes(".") && !this.check(TokenType.PIPE_FILTER)) {
+                    return { type: "variable", name: value }
+                }
+            }
 
-			// Default case: Treat as a regular string literal
-			return { type: "literal", value }
-		}
+            // Default case: Treat as a regular string literal
+            return { type: "literal", value }
+        }
 
-		if (this.match(TokenType.NUMBER)) {
-			return {
-				type: "literal",
-				value: this.previous().literal,
-			}
-		}
+        if (this.match(TokenType.NUMBER)) {
+            return {
+                type: "literal",
+                value: this.previous().literal,
+            }
+        }
 
-		if (this.match(TokenType.TRUE)) {
-			return { type: "literal", value: true }
-		}
-		if (this.match(TokenType.FALSE)) {
-			return { type: "literal", value: false }
-		}
+        if (this.match(TokenType.TRUE)) {
+            return { type: "literal", value: true }
+        }
+        if (this.match(TokenType.FALSE)) {
+            return { type: "literal", value: false }
+        }
 
-		if (this.match(TokenType.LBRACKET)) {
-			return this.array()
-		}
+        if (this.match(TokenType.AT_INDEX)) {
+            return {
+                type: "index_ref",
+            }
+        }
 
-		if (this.match(TokenType.LBRACE)) {
-			return this.object()
-		}
+        if (this.match(TokenType.AT_KEY)) {
+            return {
+                type: "key_ref",
+            }
+        }
 
-		if (this.match(TokenType.LPAREN)) {
-			const expr = this.parseExpression()
-			this.consume(TokenType.RPAREN, "Expect ')' after expression.")
-			return {
-				type: "grouping",
-				expression: expr,
-			}
-		}
+        if (this.match(TokenType.THIS)) {
+            return {
+                type: "this_ref",
+            }
+        }
 
-		// Handle RAW_HTML tokens (terminal values)
-		if (this.match(TokenType.RAW_HTML)) {
-			return {
-				type: "raw_html",
-				name: this.previous().lexeme,
-			}
-		}
+        if (this.match(TokenType.LBRACKET)) {
+            return this.array()
+        }
 
-		// Handle regular IDENTIFIER tokens
-		if (this.match(TokenType.IDENTIFIER)) {
-			let expr = {
-				type: "variable",
-				name: this.previous().lexeme,
-			}
+        if (this.match(TokenType.LBRACE)) {
+            return this.object()
+        }
 
-			while (this.match(TokenType.DOT, TokenType.LBRACKET)) {
-				const access = this.previous().type
+        if (this.match(TokenType.LPAREN)) {
+            const expr = this.parseExpression()
+            this.consume(TokenType.RPAREN, "Expect ')' after expression.")
+            return {
+                type: "grouping",
+                expression: expr,
+            }
+        }
 
-				if (access === TokenType.DOT) {
-					const name = this.consume(TokenType.IDENTIFIER, "Expect property name after '.'").lexeme
-					expr = {
-						type: "property",
-						object: expr,
-						property: name,
-					}
-				} else {
-					// Handle both numeric indices and string literals in brackets
-					let index
-					if (this.match(TokenType.STRING)) {
-						// String literal access
-						index = {
-							type: "literal",
-							value: this.previous().literal,
-						}
-					} else {
-						// Regular numeric or expression access
-						index = this.parseExpression()
-					}
+        // Handle RAW_HTML tokens (terminal values)
+        if (this.match(TokenType.RAW_HTML)) {
+            return {
+                type: "raw_html",
+                name: this.previous().lexeme,
+            }
+        }
 
-					this.consume(TokenType.RBRACKET, "Expect ']' after property access")
-					expr = {
-						type: "computed_property", // Node type for computed property access
-						object: expr,
-						property: index,
-					}
-				}
-			}
+        // Handle regular IDENTIFIER tokens
+        if (this.match(TokenType.IDENTIFIER)) {
+            let expr = {
+                type: "variable",
+                name: this.previous().lexeme,
+            }
 
-			return expr
-		}
+            while (this.match(TokenType.DOT, TokenType.LBRACKET)) {
+                const access = this.previous().type
 
-		throw new Error(`Unexpected token: ${this.peek().lexeme} at position ${this.peek().position}`)
-	}
+                if (access === TokenType.DOT) {
+                    const name = this.consume(TokenType.IDENTIFIER, "Expect property name after '.'").lexeme
+                    expr = {
+                        type: "property",
+                        object: expr,
+                        property: name,
+                    }
+                } else {
+                    // Handle both numeric indices and string literals in brackets
+                    let index
+                    if (this.match(TokenType.STRING)) {
+                        // String literal access
+                        index = {
+                            type: "literal",
+                            value: this.previous().literal,
+                        }
+                    } else {
+                        // Regular numeric or expression access
+                        index = this.parseExpression()
+                    }
 
-	// Collections: array - object
-	array() {
-		const elements = []
+                    this.consume(TokenType.RBRACKET, "Expect ']' after property access")
+                    expr = {
+                        type: "computed_property", // Node type for computed property access
+                        object: expr,
+                        property: index,
+                    }
+                }
+            }
 
-		if (!this.check(TokenType.RBRACKET)) {
-			do {
-				elements.push(this.parseExpression())
-			} while (this.match(TokenType.COMMA))
-		}
+            return expr
+        }
 
-		this.consume(TokenType.RBRACKET, "Expect ']' after array elements.")
+        throw new Error(`Unexpected token: ${this.peek().lexeme} at position ${this.peek().position}`)
+    }
 
-		return {
-			type: "array",
-			elements,
-		}
-	}
+    // Collections: array - object
+    array() {
+        const elements = []
 
-	object() {
-		const properties = new Map()
-		this.state.isInObjectLiteral = true // Set flag when entering object
+        if (!this.check(TokenType.RBRACKET)) {
+            do {
+                elements.push(this.parseExpression())
+            } while (this.match(TokenType.COMMA))
+        }
 
-		if (!this.check(TokenType.RBRACE)) {
-			do {
-				// Parse key
-				let key
-				if (this.match(TokenType.STRING)) {
-					key = this.previous().literal
-				} else {
-					key = this.consume(TokenType.IDENTIFIER, "Expect property name").lexeme
-				}
+        this.consume(TokenType.RBRACKET, "Expect ']' after array elements.")
 
-				this.consume(TokenType.COLON, "Expect ':' after property name")
-				const value = this.parseExpression()
+        return {
+            type: "array",
+            elements,
+        }
+    }
 
-				properties.set(key, value)
-			} while (this.match(TokenType.COMMA))
-		}
+    object() {
+        const properties = new Map()
+        this.state.isInObjectLiteral = true // Set flag when entering object
 
-		this.state.isInObjectLiteral = false // Reset flag when exiting object
-		this.consume(TokenType.RBRACE, "Expect '}' after object literal")
+        if (!this.check(TokenType.RBRACE)) {
+            do {
+                // Parse key
+                let key
+                if (this.match(TokenType.STRING)) {
+                    key = this.previous().literal
+                } else {
+                    key = this.consume(TokenType.IDENTIFIER, "Expect property name").lexeme
+                }
 
-		return {
-			type: "object",
-			properties,
-		}
-	}
+                this.consume(TokenType.COLON, "Expect ':' after property name")
+                const value = this.parseExpression()
+
+                properties.set(key, value)
+            } while (this.match(TokenType.COMMA))
+        }
+
+        this.state.isInObjectLiteral = false // Reset flag when exiting object
+        this.consume(TokenType.RBRACE, "Expect '}' after object literal")
+
+        return {
+            type: "object",
+            properties,
+        }
+    }
 }
