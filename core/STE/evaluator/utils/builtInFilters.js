@@ -104,6 +104,19 @@ export const builtInFilters = {
         return String(value).charAt(0).toUpperCase() + String(value).slice(1)
     },
 
+    chunk: (array, size = 1) => {
+        validateArrayInput(array, "chunk")
+        const chunkSize = Math.floor(Number(size))
+        if (isNaN(chunkSize) || chunkSize < 1) {
+            throw new Error("chunk filter expects a positive integer as size")
+        }
+        const chunks = []
+        for (let i = 0; i < array.length; i += chunkSize) {
+            chunks.push(array.slice(i, i + chunkSize))
+        }
+        return chunks
+    },
+
     currency: (value, symbol = "$") => {
         const number = Number(value)
         if (isNaN(number)) {
@@ -499,6 +512,34 @@ export const builtInFilters = {
         )
     },
 
+    skip: (array, count = 1) => {
+        validateArrayInput(array, "skip")
+        const length = array.length
+        const num = Math.floor(Number(count)) || 0
+        if (num >= 0) {
+            // Skip from the start
+            return array.slice(Math.min(num, length))
+        } else {
+            // Skip from the end - another brilliant addition!
+            const skipFromEnd = Math.min(-num, length)
+            return array.slice(0, length - skipFromEnd)
+        }
+    },
+
+    slice: (array, start = 0, end = null) => {
+        validateArrayInput(array, "slice")
+        const length = array.length
+        const normalizeIndex = (index) => {
+            if (index < 0) return Math.max(0, length + index)
+            return Math.min(index, length)
+        }
+        // If end is null or undefined, slice to the end of the array
+        const endIndex = end == null ? length : normalizeIndex(end)
+        const startIndex = normalizeIndex(start)
+        if (startIndex > endIndex) return []
+        return array.slice(startIndex, endIndex)
+    },
+
     slugify: (value) => {
         if (typeof value !== "string") {
             throw new Error("slugify filter expects a string")
@@ -550,6 +591,21 @@ export const builtInFilters = {
 
             return order === "desc" ? bDate.getTime() - aDate.getTime() : aDate.getTime() - bDate.getTime()
         })
+    },
+
+    take: (array, count = 1) => {
+        validateArrayInput(array, "take")
+        const length = array.length
+        const num = Math.floor(Number(count)) || 0
+        if (num > 0) {
+            return array.slice(0, Math.min(num, length))
+        } else if (num < 0) {
+            // Take from the end - brilliant addition!
+            const absNum = Math.min(-num, length)
+            return array.slice(length - absNum)
+        } else {
+            return []
+        }
     },
 
     timeAgo: (value) => {
