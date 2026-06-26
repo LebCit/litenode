@@ -65,8 +65,11 @@ export class StatementEvaluator extends BaseEvaluator {
                 this.state.keyStack.push(index.toString())
 
                 try {
-                    const bodyResults = await Promise.all(node.body.map((n) => this.evaluator.evaluateNode(n)))
-                    result += bodyResults.join("")
+                    let iterResult = ""
+                    for (const n of node.body) {
+                        iterResult += await this.evaluator.evaluateNode(n)
+                    }
+                    result += iterResult
                 } finally {
                     this.state.contextStack.pop()
                     this.state.indexStack.pop()
@@ -82,8 +85,11 @@ export class StatementEvaluator extends BaseEvaluator {
                 this.state.keyStack.push(key)
 
                 try {
-                    const bodyResults = await Promise.all(node.body.map((n) => this.evaluator.evaluateNode(n)))
-                    result += bodyResults.join("")
+                    let iterResult = ""
+                    for (const n of node.body) {
+                        iterResult += await this.evaluator.evaluateNode(n)
+                    }
+                    result += iterResult
                 } finally {
                     this.state.contextStack.pop()
                     this.state.indexStack.pop()

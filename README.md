@@ -1,17 +1,6 @@
 # LiteNode
 
-LiteNode is a lightweight and modular Node.js web framework designed to provide essential web server functionalities with a clean and intuitive API. It leverages modern JavaScript features, making it versatile for various development environments. LiteNode is suitable for developers seeking a straightforward yet powerful solution for building web applications.
-
-<p align="center">
-    LiteNode checks for and notifies you if a new version is available whenever the server starts.<br>
-    <a href="https://litenode.pages.dev/">Documentation</a>
-</p>
-
-<p align="center">
-    <a href="https://lebcit.github.io/post/ultimate-markdown-based-application-tutorial-in-nodejs/">Dive into My Ultimate Markdown-based Application Tutorial in Node.js!</a>
-</p>
-
-**BREAKING CHANGE:** As of LiteNode version 4.0.0, the integrated Simple Template Engine (STE) has been upgraded to a more powerful [AST-based](https://lebcit.github.io/post/from-regexes-to-ast-ste-journey-to-adulthood/) template engine. With this update, the engine's tags have been unified to a single signature, making it simpler and more efficient. There are also many new features to explore, so check out the [updated documentation](https://litenode.pages.dev/docs/rendering-templates/) to fully take advantage of these improvements.
+Lightweight, zero-dependency, and intuitive. Build web applications, APIs, and static sites with a clean and expressive API.
 
 ## Installation
 
@@ -34,7 +23,7 @@ const app = new LiteNode()
 
 // Define a route
 app.get("/", (req, res) => {
-  res.txt("Hello, LiteNode!")
+    res.txt("Hello, LiteNode!")
 })
 
 // Start the server
@@ -43,34 +32,18 @@ app.startServer()
 
 ## Key Features
 
--   **Efficient Routing**: LiteNode provides a [flexible routing system](https://litenode.pages.dev/docs/routing/) allowing you to define routes with various HTTP methods.
--   **Middleware Support**: Easily integrate [middleware functions](https://litenode.pages.dev/docs/middleware/) into your application to handle common tasks such as logging, authentication, etc.
--   **Integrated Body Parser**: Simplify handling of POST requests with [LiteNode's integrated body parser](https://litenode.pages.dev/docs/body-parsing/), supporting `application/json`, `application/x-www-form-urlencoded`, and `multipart/form-data` content types.
--   **Static Asset Loader**: Serve static files effortlessly with [LiteNode's built-in static asset loader](https://litenode.pages.dev/docs/serving-static-files/), without server restart.
--   **Error Handling**: Customize [error handling](https://litenode.pages.dev/docs/error-handling/) with ease, ensuring robustness and reliability in your application.
--   **Templating**: LiteNode features an integrated, powerful [AST-based](https://lebcit.github.io/post/from-regexes-to-ast-ste-journey-to-adulthood/) template engine, called [STE](https://litenode.pages.dev/docs/rendering-templates/) (Simple Template Engine), for rendering HTML files.
--   **Markdown**: With [LiteNode's support for Markdown](https://litenode.pages.dev/docs/markdown/), you can easily create content-driven applications with rich text formatting.
--   **Environment Variables**: LiteNode provides built-in support for [environment variables](https://litenode.pages.dev/docs/env-variables/) through `.env` files, allowing you to manage configuration without external dependencies.
--   **Cookies**: LiteNode includes a comprehensive [cookie management system](https://litenode.pages.dev/docs/cookies/) that makes it easy to set, read, and manage cookies in your web applications.
+- **Truly Lightweight** 🪶 - Zero external dependencies. LiteNode ships only what you need for a production-ready web server.
+- **Expressive Routing** 🛣️ - Named params, optional params, wildcards, catch-all patterns, and nested routers — all with a clean API.
+- **AST Template Engine** 🏗️ - STE (Simple Template Engine) is an integrated, AST-based engine for rendering HTML with full data injection support.
+- **Markdown Native** 📃 - Parse individual or entire directories of Markdown files, extract frontmatter, paginate, and generate TOCs built-in.
+- **Smart Static Files** 📂 - Serve assets from a static directory. New files are picked up automatically — no server restart needed.
+- **Cookie Management** 🍪 - Full cookie lifecycle: parse, set, sign, verify, and delete — including signed cookies with HMAC verification.
+- **Environment Variables** ⚙️ - Built-in .env file loading with multi-environment support. No dotenv dependency required.
 
-## Strengths
+## Documentation
 
--   **Lightweight and Fast**: LiteNode is designed to be lightweight, ensuring quick response times and efficient handling of requests.
--   **Modular Design**: The framework's modularity allows for easy customization and extension, enabling developers to add or modify functionalities as needed.
--   **Modern JavaScript Support**: LiteNode leverages ES6 features, making the codebase clean and modern.
--   **Comprehensive Built-in Features**: The framework includes essential web server features out of the box, reducing the need for additional dependencies and simplifying development.
-
-## Conclusion
-
-LiteNode is a versatile and efficient web framework for Node.js, offering a range of features that cater to modern web development needs. Its lightweight design, coupled with powerful routing, middleware, and templating capabilities, makes it an excellent choice for developers seeking a balance between simplicity and functionality. Whether building small web applications, APIs, or static websites, LiteNode provides a solid foundation for rapid development and deployment.
-
-## Origins
-
-LiteNode is a powerful and flexible Node.js web framework. Its **routing system** is built on the foundation of [Velocy](https://github.com/ishtms/velocy). It extends and improves upon Velocy's features to provide a seamless development experience for building web applications. You can read more about it in [LiteNode, Node.js Web Framework](https://lebcit.github.io/post/litenode-nodejs-web-framework/).
-
-## License
-
-LiteNode is licensed under the MIT License. See the [LICENSE](https://github.com/LebCit/litenode/blob/main/LICENSE) file for details.
+The documentation is available on [litenode.pages.dev](https://litenode.pages.dev/).  
+Learn to build a Markdown-based web application using LiteNode: [litenode-markdown-app.pages.dev](https://litenode-markdown-app.pages.dev/).
 
 ## Issues
 
@@ -83,3 +56,7 @@ Contributions are welcome! Feel free to fork the repository and submit pull requ
 ## Author
 
 LiteNode is authored by [LebCit](https://github.com/LebCit).
+
+## License
+
+LiteNode is licensed under the MIT License. See the [LICENSE](https://github.com/LebCit/litenode/blob/main/LICENSE) file for details.

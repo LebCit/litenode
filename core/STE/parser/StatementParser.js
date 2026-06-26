@@ -228,22 +228,7 @@ export class StatementParser extends BaseParser {
                     value: this.previous().literal,
                 })
             } else if (this.match(TokenType.DOUBLE_BRACE_OPEN)) {
-                if (this.match(TokenType.AT_INDEX)) {
-                    this.consume(TokenType.DOUBLE_BRACE_CLOSE, "Expect '}}' after @index")
-                    body.push({
-                        type: "index_ref",
-                    })
-                } else if (this.match(TokenType.AT_KEY)) {
-                    this.consume(TokenType.DOUBLE_BRACE_CLOSE, "Expect '}}' after @key")
-                    body.push({
-                        type: "key_ref",
-                    })
-                } else if (this.match(TokenType.THIS)) {
-                    this.consume(TokenType.DOUBLE_BRACE_CLOSE, "Expect '}}' after this")
-                    body.push({
-                        type: "this_ref",
-                    })
-                } else if (this.match(TokenType.TAG_SET)) {
+                if (this.match(TokenType.TAG_SET)) {
                     body.push(this.parseSet())
                 } else if (this.match(TokenType.TAG_EACH)) {
                     body.push(this.parseEach())
